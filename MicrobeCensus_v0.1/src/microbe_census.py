@@ -331,8 +331,8 @@ def aggregate_hits(best_hits, read_length):
     agg_hits = {}
     for fam_id, aln, cov, score in best_hits.values():
         aln_stat = optpars[fam_id][-1]
-        if fam_id not in agg_hits: agg_hits[fam_id] = 1 if aln_stat == 'hits' else cov if aln_stat == 'cov' else aln
-        else: agg_hits[fam_id] += 1 if aln_stat == 'hits' else cov if aln_stat == 'cov' else aln
+        if fam_id not in agg_hits: agg_hits[fam_id] = 1.0 if aln_stat == 'hits' else cov if aln_stat == 'cov' else aln
+        else: agg_hits[fam_id] += 1.0 if aln_stat == 'hits' else cov if aln_stat == 'cov' else aln
     return agg_hits
 
 def pred_genome_size(agg_hits, n_reads_sampled, read_length):
@@ -520,12 +520,12 @@ if nreads < 1:
 if not os.path.isfile(p_reads):
     sys.exit("Input file does not exist.")
 
-if not os.path.isdir(os.path.dirname(p_out)):
-    sys.exit("Output directory does not exist.")
+#if not os.path.isdir(os.path.dirname(p_out)):
+#    sys.exit("Output directory does not exist.")
+#
+#if not os.access(os.path.dirname(p_out), os.W_OK):
+#    sys.exit("Output directory is not writable.")
 
-if not os.access(os.path.dirname(p_out), os.W_OK):
-    sys.exit("Output directory is not writable.")
-    
 #######################################################################################
 #   MAIN
 

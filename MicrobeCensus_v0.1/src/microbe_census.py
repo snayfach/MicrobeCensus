@@ -77,10 +77,12 @@ def auto_detect_fastq_format(p_reads, max_depth):
     """ Auto detect FASTQ file format (sanger, solexa, or illumina)
         For details: http://en.wikipedia.org/wiki/FASTQ_format
     """
+    print 'Detecting FASTQ format...'
     # format specific characters
     sanger   = set(list("""!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ"""))
     solexa   = set(list(""";<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
     illumina = set(list("""@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
+    formats  = {'sanger': sanger, 'solexa': solexa, 'illumina': illumina}
     # open input stream
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.open(p_reads) if ext == 'bz2' else open(p_reads)
@@ -90,18 +92,25 @@ def auto_detect_fastq_format(p_reads, max_depth):
         i += 1
         if i != 4: continue
         for q in line.rstrip():
-            if q in sanger and q not in solexa and q not in illumina:
-                print '\t' + 'FASTQ format detected as Sanger/Illumina 1.8+'
-                return 'sanger'
-            elif q in solexa and q not in illumina and q not in sanger:
-                print '\t' + 'FASTQ format detected as Solexa'
-                return 'solexa'
+            # look for incompatible formats
+            for format in formats.keys():
+                if q not in formats[format]:
+                    del formats[format]
+            if len(formats) == 1:
+                print '\t', formats.keys()[0]
+                return formats.keys()[0]
+            elif len(formats) == 0:
+                print '\t', 'Unrecognized character in quality string:', line.rstrip()
+                exit()
         i = 0; j += 1
         if j == max_depth:
             break
-    return 'illumina'
+    # guess at format if not detected
+    guess = random.sample(formats.keys(), 1)[0]
+    print '\t', 'Ambiguous quality encoding, guessing:', guess
+    return guess
 
-def process_fasta(p_reads, p_wkdir, nreads, read_length):
+def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknown):
     """ Sample <nreads> of <read_length> from <p_reads>
         Write reads to tmpfile in <p_wkdir>
         Return path to tmpfile, sampled read_ids
@@ -115,23 +124,45 @@ def process_fasta(p_reads, p_wkdir, nreads, read_length):
     # loop over sequences
     read_ids = []
     read_id  = 0
+    dups = 0
+    too_short = 0
+    low_qual = 0
+    seqs = set([])
     for record in Bio.SeqIO.parse(f_in, "fasta"):
         # parse record
         id = str(record.id)
         sequence = record.seq
+        my_seq = sequence[0:read_length]
         # record sequence if enough high quality bases remain
         if len(sequence) < read_length:
+            too_short += 1
             continue
+        # check if sequence is a duplicate
+        elif filter_dups is True and (str(sequence) in seqs or str(sequence.reverse_complement()) in seqs):
+            dups += 1
+            continue
+        # check proportion of ambiguous base calls (N)
+        elif sum([1 if base == 'N' else 0 for base in list(my_seq)])/float(read_length) > max_unknown:
+            low_qual += 1
+            continue
+        # keep seq
         else:
             f_out.write('>' + str(read_id) + '\n' + str(sequence[0:read_length]) + '\n')
             read_ids.append(read_id)
             read_id += 1
+            if filter_dups is True:
+                seqs.add(str(sequence))
         # stop when nreads written
         if read_id == nreads:
             break
-    # check # of reads sampled
+    # print status: # of reads sampled, filtered
+    print '\t', too_short, 'reads shorter than specified read length and skipped'
+    if filter_dups:
+        print '\t', dups, 'duplicate reads found and skipped'
+    if max_unknown < 1.0:
+        print '\t', low_qual, 'low quality reads found and skipped'
     if read_id == 0:
-        print '** Error: Found no reads of', str(read_length) + 'bp', 'in seqfile. Rerun program with shorter read length!'
+        print '\t', '** Error: No reads remaining after filtering!'
         clean_up([p_out])
         sys.exit()
     else:
@@ -171,7 +202,7 @@ def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quali
             too_short += 1
             continue        
         # check if sequence is a duplicate
-        elif filter_dups is True and (str(sequence) in seqs or sequence.reverse_complement() in seqs):
+        elif filter_dups is True and (str(sequence) in seqs or str(sequence.reverse_complement()) in seqs):
             dups += 1
             continue
         # check read-level sequence quality
@@ -499,7 +530,7 @@ read_lengths = read_list(p_read_len, header=True, dtype='int')
 if read_length not in read_lengths:
     sys.exit("Invalid read length. Choose a supported read length:\n\t" + str(read_lengths))
 
-if file_type == "fasta" and any([min_quality > -5, mean_quality > -5, qual_code is not None, filter_dups, max_unknown < 1.0]):
+if file_type == "fasta" and any([min_quality > -5, mean_quality > -5, qual_code is not None]):
     sys.exit("Quality filtering options are only available for FASTQ files")
 
 if qual_code not in ['sanger', 'solexa', 'illumina', None]:
@@ -535,7 +566,7 @@ if file_type == 'fastq':
     fastq_format = auto_detect_fastq_format(p_reads, max_depth) if qual_code is None else qual_code
     p_sampled_reads, read_ids = process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quality, filter_dups, max_unknown, fastq_format)
 elif file_type == 'fasta':
-    p_sampled_reads, read_ids = process_fasta(p_reads, p_wkdir, nreads, read_length)
+    p_sampled_reads, read_ids = process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknown)
 n_reads_sampled = len(read_ids)
 
 # 2. Search sampled reads against single-copy gene families

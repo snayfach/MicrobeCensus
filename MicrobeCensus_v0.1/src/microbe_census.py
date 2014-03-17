@@ -163,7 +163,7 @@ def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknow
         print '\t', low_qual, 'low quality reads found and skipped'
     if read_id == 0:
         print '\t', '** Error: No reads remaining after filtering!'
-        clean_up([p_out])
+        if keep_tmp is False: clean_up([p_out])
         sys.exit()
     else:
         print '\t', read_id, str(read_length) + 'bp', 'reads sampled from seqfile'
@@ -235,7 +235,7 @@ def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quali
         print '\t', low_qual, 'low quality reads found and skipped'
     if read_id == 0:
         print '\t', '** Error: No reads remaining after filtering!'
-        clean_up([p_out])
+        if keep_tmp is False: clean_up([p_out])
         sys.exit()
     else:
         print '\t', read_id, str(read_length) + 'bp', 'reads sampled from seqfile'
@@ -255,12 +255,11 @@ def search_seqs(reads, db, rapsearch, threads):
     process = subprocess.Popen(command, shell=True, stdout=devnull, stderr=devnull)
     retcode = process.wait()
     if retcode == 0:
-        clean_up([reads])
+        if keep_tmp is False: clean_up([reads])
         return (out+'.m8', out+'.aln')
     else:
         print '** Error: Database search has exited with an error!'
-        print command
-        clean_up([reads, out+'.m8', out+'.aln'])
+        if keep_tmp is False: clean_up([reads, out+'.m8', out+'.aln'])
         sys.exit()
 
 def gmaxaln_cov(aln, read_length, target_len, query_start, query_stop, target_start, target_stop):
@@ -318,7 +317,7 @@ def classify_reads(results, alignments, read_length):
         elif best_hits[query][-1] < score:
             best_hits[query] = [target_fam, aln, target_cov, score]
     # check that at least 1 read passed filters
-    clean_up([results, alignments])
+    if keep_tmp is False: clean_up([results, alignments])
     if len(best_hits) == 0:
         print '** Error: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.'
         sys.exit()
@@ -433,7 +432,7 @@ def write_results(p_out):
     f_out.write('\t'.join([str(x) for x in record])+'\n')
     f_out.close()
     # cleanup temporary files
-    clean_up([p_results, p_aln])
+    if keep_tmp is False: clean_up([p_results, p_aln])
 
 def find_opt_pars(p_optpars, read_length):
     """ Read in optimal parameters for each family at given read length
@@ -494,6 +493,7 @@ p_read_len  = os.path.join(data_dir, 'read_len.map')
 parser = optparse.OptionParser(usage = "Usage: microbe_census [-options] <seqfile> <outfile> <nreads> <read_length>")
 parser.add_option("-t", dest="threads",      default=1,       help="number of threads to use for database search (default = 1)")
 parser.add_option("-n", dest="nboot",        default=0,       help="number of bootstrap iterations (default = none)")
+parser.add_option("-k", dest="keep_tmp",     default=False,   help="keep temporary files (default: False)", action='store_true')
 parser.add_option("-f", dest="file_type",    default="fastq", help="file type: fasta or fastq (default = 'fastq')")
 parser.add_option("-q", dest="min_quality",  default=-5,      help="min base-level PHRED quality score: default = -5; no filtering")
 parser.add_option("-m", dest="mean_quality", default=-5,      help="min read-level PHRED quality score: default = -5; no filtering")
@@ -519,6 +519,7 @@ try:
     qual_code = options.qual_code
     filter_dups = options.filter_dups
     max_unknown = float(options.max_unknown)/100
+    keep_tmp = options.keep_tmp
 except Exception, e:
     print "Incorrect number of command line arguments."
     print "\nUsage: microbe_census [-options] <seqfile> <outfile> <nreads> <read_length>"
@@ -561,7 +562,7 @@ if not os.path.isfile(p_reads):
 #   MAIN
 
 # 1. Downsample nreads of read_length from seqfile;
-#    optionally detect FASTQ format, remove duplicates, and perform quality filtering
+#       -optionally detect FASTQ format, remove duplicates, and perform quality filtering
 if file_type == 'fastq':
     fastq_format = auto_detect_fastq_format(p_reads, max_depth) if qual_code is None else qual_code
     p_sampled_reads, read_ids = process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quality, filter_dups, max_unknown, fastq_format)
@@ -569,7 +570,7 @@ elif file_type == 'fasta':
     p_sampled_reads, read_ids = process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknown)
 n_reads_sampled = len(read_ids)
 
-# 2. Search sampled reads against single-copy gene families
+# 2. Search sampled reads against single-copy gene families using RAPsearch2
 p_results, p_aln = search_seqs(p_sampled_reads, p_db, p_rapsearch, threads)
 
 # 3. Classify reads into gene families according to read length and family specific parameters
@@ -578,7 +579,10 @@ best_hits = classify_reads(p_results, p_aln, read_length)
 # 4. Count # of hits to each gene family
 agg_hits = aggregate_hits(best_hits, read_length)
 
-# 5. Predict average genome size
+# 5. Predict average genome size:
+#       -predict size using each of 30 gene models
+#       -remove outlier predictions
+#       -take a weighted average across remaining predictions
 avg_size = pred_genome_size(agg_hits, n_reads_sampled, read_length)
 
 # 6. Report results

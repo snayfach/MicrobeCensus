@@ -1,5 +1,0 @@
-# RAPSearch
-# Job submitted: Sat Mar 15 16:41:00 2014
-# Query : 2511231217.fa.tmp
-# Subject : ../data/rapdb_2.15
-# Fields: Query	Subject	identity	aln-len	mismatch	gap-openings	q.start	q.end	s.start	s.end	log(e-value)	bit-score

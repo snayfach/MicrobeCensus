@@ -85,7 +85,7 @@ def auto_detect_fastq_format(p_reads, max_depth):
     formats  = {'sanger': sanger, 'solexa': solexa, 'illumina': illumina}
     # open input stream
     ext = p_reads.split('.')[-1]
-    f_in = gzip.open(p_reads) if ext == 'gz' else bz2.open(p_reads) if ext == 'bz2' else open(p_reads)
+    f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
     # loop over quality scores
     i = 0; j = 0
     for line in f_in:
@@ -118,7 +118,7 @@ def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknow
     print 'Processing sequences...'
     # open input, output files
     ext = p_reads.split('.')[-1]
-    f_in = gzip.open(p_reads) if ext == 'gz' else bz2.open(p_reads) if ext == 'bz2' else open(p_reads)
+    f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
     p_out = os.path.join(p_wkdir, os.path.basename(p_reads).rstrip('.gz')+'.tmp')
     f_out = open(p_out, 'w')
     # loop over sequences
@@ -178,7 +178,7 @@ def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quali
     print 'Processing sequences...'
     # open input, output files
     ext = p_reads.split('.')[-1]
-    f_in = gzip.open(p_reads) if ext == 'gz' else bz2.open(p_reads) if ext == 'bz2' else open(p_reads)
+    f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
     p_out = os.path.join(p_wkdir, os.path.basename(p_reads).rstrip('.gz')+'.tmp')
     f_out = open(p_out, 'w')
     # determine format

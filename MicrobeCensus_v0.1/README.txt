@@ -37,7 +37,7 @@ That's it! Necessary external libraries and binaries are included in our package
 
 #USAGE
 
-python microbe_census.py [-options] <seqfile> <outfile> <nreads> <read_length>  
+microbe_census [-options] <seqfile> <outfile> <nreads> <read_length>  
 
 Options:
   -h, --help       show this help message and exit

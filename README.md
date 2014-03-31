@@ -37,29 +37,26 @@ That's it! Necessary external libraries and binaries are included in our package
 
 #USAGE
 
-microbe_census [-options] <seqfile> <outfile> <nreads> <read_length>
-For all options enter: microbe_census -h
+python microbe_census.py [-options] \<seqfile\> \<outfile\> \<nreads\> \<read_length\>  
+For all options enter: python microbe_census.py -h
+
+#RECOMMENDATIONS
+
+* Filter duplicate reads using the -d flag.
+  Be aware that this can consume large amounts of memory (>2G) when searching many reads (>20M)  
+* Filter very low quality reads using -m 5 and -u 5.  
+  Note that these options are only available for FASTQ files  
+* Limit the number of reads searched (\<nreads\>) to less than 5e6.  
+  We found that accurate estimates of AGS can be made using as few at 500K reads.  
+* Be sure to remove potential sources of contamination from your metagenome, including  
+  adaptor sequence and possibly host DNA (in the case of a host-associated metagenome).  
+* Our software was primarily developed for use in microbial communities composed of Bacteria and Archaea.  
+  AGS may not be accurately estimated for communities composed of large amounts of Eukaryotes or Viruses  
 
 
-#EXAMPLES:
+#EXAMPLES
 
 See the example directory.
-
-
-#RECOMMENDATION:
-
--filter duplicate reads using the -d flag; 
- be aware that this can consume large amounts of memory (>2G) when searching many reads (>20M)
--filter very low quality reads using -m 5 and -u 5
- note that these options are only available for FASTQ files
--limit <nreads> to less than 5e6.
- we found that accurate estimates of AGS can be made using as few at 500K reads.
--be sure to remove potential sources of contamination from your metagenome, including
- adaptor sequence and possibly host DNA (in the case of a host-associated metagenome)
--our software was primarily developed for use in microbial communities of Bacteria and Archaea;
- AGS may not be accurately estimated for communities composed of large amounts of Eukaryotes or Viruses
-
-
 
 
 

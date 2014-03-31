@@ -1,0 +1,29 @@
+FILES
+example.fq.gz contains 10,000 70 bp sequences in FASTQ format (solexa encoding)
+example.fa.gz contains 10,000 500 bp sequences in FASTA format
+
+SETUP
+Add microbe_census to your PATH: export PATH=$PATH:/MicrobeCensus/MicrobeCensus_v0.1/src 
+
+EXAMPLES
+1. Run with default options
+
+microbe_census -f fastq example.fq.gz fastq_example.out 10000 70
+   or
+microbe_census -f fasta example.fa.gz fasta_example.out 10000 70
+
+
+2. Run with recommended quality filtering options
+    -filter exact duplicates
+    -filter reads with an unknown base-call (N)
+    -filter reads with mean quality < 5
+
+microbe_census -f fastq -d -u 0 -m 5 example.fq.gz fastq_example.out 10000 70
+
+
+3. Run with different number of reads and read length
+
+microbe_census -f fasta example.fa.gz fastq_example.out 5000 500
+
+
+

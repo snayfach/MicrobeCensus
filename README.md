@@ -22,8 +22,8 @@ More information can be found in our publication, which should be in print soon.
 
 Simply download our software package from github:
 
-git clone git@github.com:snayfach/MicrobeCensus.git
---OR--
+git clone git@github.com:snayfach/MicrobeCensus.git  
+--OR--  
 wget https://github.com/snayfach/MicrobeCensus/archive/master.zip
 
 And add the path of the src directory to your PATH.
@@ -37,8 +37,8 @@ That's it! Necessary external libraries and binaries are included in our package
 
 #USAGE
 
-python microbe_census.py [-options] \<seqfile\> \<outfile\> \<nreads\> \<read_length\>  
-For all options enter: python microbe_census.py -h
+microbe_census [-options] \<seqfile\> \<outfile\> \<nreads\> \<read_length\>  
+For all options enter: microbe_census
 
 #RECOMMENDATIONS
 

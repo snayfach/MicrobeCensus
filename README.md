@@ -1,4 +1,5 @@
-SUMMARY
+#SUMMARY
+
 This software will rapidly and accurately estimate the average genome size (AGS) 
 of a microbial community from metagenomic data. In short, AGS is estimated based 
 on the rate (i.e. fraction of) reads in a metagenome are classified into a universal 

@@ -18,7 +18,8 @@ normalized abundance = observed abundance * AGS
 More information can be found in our publication, which should be in print soon.
 
 
-INSTALLATION
+#INSTALLATION
+
 Simply download our software package from github:
 
 git clone git@github.com:snayfach/MicrobeCensus.git
@@ -28,21 +29,25 @@ wget https://github.com/snayfach/MicrobeCensus/archive/master.zip
 And add the path of the src directory to your PATH.
 
 
-DEPENDENCIES
+#DEPENDENCIES
+
 Python version 2.7; Our software has not yet been tested on other versions of Python
 That's it! Necessary external libraries and binaries are included in our package.
 
 
-USAGE
+#USAGE
+
 microbe_census [-options] <seqfile> <outfile> <nreads> <read_length>
 For all options enter: microbe_census -h
 
 
-EXAMPLES:
+#EXAMPLES:
+
 See the example directory.
 
 
-RECOMMENDATION:
+#RECOMMENDATION:
+
 -filter duplicate reads using the -d flag; 
  be aware that this can consume large amounts of memory (>2G) when searching many reads (>20M)
 -filter very low quality reads using -m 5 and -u 5

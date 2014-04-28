@@ -21,14 +21,27 @@ And add the path of the src directory to your PATH.
 
 #DEPENDENCIES
 
-Python version 2.7; Our software has not yet been tested on other versions of Python
+Python version 2.7; Our software has not yet been tested on other versions of Python  
 That's it! Necessary external libraries and binaries are included in our package.
-
 
 #USAGE
 
 microbe_census [-options] \<seqfile\> \<outfile\> \<nreads\> \<read_length\>  
-For all options enter: microbe_census
+
+Options:  
+  -h, --help       show this help message and exit  
+  -t THREADS       number of threads to use for database search (default = 1)  
+  -k               keep temporary files (default: False)  
+  -f FILE_TYPE     file type: fasta or fastq (default = 'fastq')  
+  -q MIN_QUALITY   min base-level PHRED quality score: default = -5; no  
+                   filtering  
+  -m MEAN_QUALITY  min read-level PHRED quality score: default = -5; no  
+                   filtering  
+  -d               filter duplicate reads (default: False)  
+  -c QUAL_CODE     quality score encoding: [sanger, solexa, illumina]  
+                   (default: autodetect)  
+  -u MAX_UNKNOWN   max percent of unknown bases: default = 100%; no filtering 
+
 
 #RECOMMENDATIONS
 

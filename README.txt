@@ -18,10 +18,12 @@ wget https://github.com/snayfach/MicrobeCensus/archive/master.zip
 And add the path of the src directory to your PATH.
 
 
-#DEPENDENCIES
+#REQUIREMENTS
 
-Python version 2.7; Our software has not yet been tested on other versions of Python
-That's it! Necessary external libraries and binaries are included in our package.
+x86_64 Architecture
+Python 2.7.3
+
+Our software may work, but has not been tested on other versions of Python
 
 
 #USAGE

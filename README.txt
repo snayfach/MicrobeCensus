@@ -8,8 +8,20 @@ the fraction of reads which hit these genes.
 AUTHORS: Stephen Nayfach (snayfach@gmail.com)
 
 USAGE
-microbe_census [-options] <seqfile> <outfile> <nreads> <read_length>  
-Options:
+microbe_census [-options] <seqfile> <outfile> <nreads> <read_length> 
+
+Positional arguments:
+  <seqfile>        Input metagenome. Can be a multi FASTA or FASTQ file. 
+                   Gzip (.gz) and Bzip (.bz2) file extensions recognized
+  <outfile>        Tab delimited output file that includes AGS estimate.
+  <nreads>         Maximum number of reads to use from <seqfile>
+                   AGS can be accurately estimated using as few as 300,000 - 500,000 reads
+                   If you don't know the exact number of reads in <seqfile>, and would like to use all
+                   of the reads, set <nreads> to a value that exceeds the number of reads in <seqfile> (ex: 1e9)
+  <read_length>    Read length to use for AGS estimation. All reads sampled from <seqfile> will be trimmed to 
+                   this length. 
+                   Accepted values include: 50,60,70,80,90,100,110,120,130,140,150,175,200,225,250,300,350,400,450,500
+Optional arguments:
   -h, --help       show this help message and exit
   -t THREADS       number of threads to use for database search (default = 1)
   -k               keep temporary files (default: False)
@@ -36,7 +48,6 @@ Python 2.7.3
 Our software may work, but has not been tested on other versions of Python
 
 RECOMMENDATIONS
-
 * Filter duplicate reads using the -d flag.
   Be aware that this can consume large amounts of memory (>2G) when searching many reads (>20M)  
 * Filter very low quality reads using -m 5 and -u 5.  
@@ -46,5 +57,5 @@ RECOMMENDATIONS
 * Be sure to remove potential sources of contamination from your metagenome, including  
   adaptor sequence and possibly host DNA (in the case of a host-associated metagenome).  
 
-EXAMPLES
+EXAMPLE USAGE
 See the example directory.

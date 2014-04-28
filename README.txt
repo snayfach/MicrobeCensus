@@ -1,35 +1,14 @@
-#SUMMARY
+DESCRIPTION
+MicrobeCensus version 1.0.0 (28 April 2014): Rapidly and accurate estimate the average genome size (AGS) 
+of a microbial community from metagenomic data. 
+In short, AGS is estimated by aligning reads to a set of universal single-copy gene families. 
+Because these genes occur in nearly all Bacteria and Archaea, genome size is inversely proportional to 
+the fraction of reads which hit these genes.
 
-MicrobeCensus will rapidly and accurately estimate the average genome size (AGS) 
-of a microbial community from metagenomic data. In short, AGS is estimated by aligning
-reads to a set of universal single-copy gene families. Because these genes occur in 
-nearly all Bacteria and Archaea, genome size is inversely proportional to the fraction
-of reads which hit these genes.
+AUTHORS: Stephen Nayfach (snayfach@gmail.com)
 
-
-#INSTALLATION
-
-Simply download our software package from github:
-
-git clone git@github.com:snayfach/MicrobeCensus.git
---OR--
-wget https://github.com/snayfach/MicrobeCensus/archive/master.zip
-
-And add the path of the src directory to your PATH.
-
-
-#REQUIREMENTS
-
-x86_64 Architecture
-Python 2.7.3
-
-Our software may work, but has not been tested on other versions of Python
-
-
-#USAGE
-
+USAGE
 microbe_census [-options] <seqfile> <outfile> <nreads> <read_length>  
-
 Options:
   -h, --help       show this help message and exit
   -t THREADS       number of threads to use for database search (default = 1)
@@ -44,7 +23,19 @@ Options:
                    (default: autodetect)
   -u MAX_UNKNOWN   max percent of unknown bases: default = 100%; no filtering
 
-#RECOMMENDATIONS
+INSTALLATION
+Simply download our software package from github:
+git clone git@github.com:snayfach/MicrobeCensus.git
+--OR--
+wget https://github.com/snayfach/MicrobeCensus/archive/master.zip
+And add the path of the src directory to your PATH.
+
+REQUIREMENTS
+x86_64 Architecture
+Python 2.7.3
+Our software may work, but has not been tested on other versions of Python
+
+RECOMMENDATIONS
 
 * Filter duplicate reads using the -d flag.
   Be aware that this can consume large amounts of memory (>2G) when searching many reads (>20M)  
@@ -55,7 +46,5 @@ Options:
 * Be sure to remove potential sources of contamination from your metagenome, including  
   adaptor sequence and possibly host DNA (in the case of a host-associated metagenome).  
 
-
-#EXAMPLES
-
+EXAMPLES
 See the example directory.

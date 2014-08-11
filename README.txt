@@ -1,39 +1,34 @@
 DESCRIPTION
-MicrobeCensus version 1.0.0 (28 April 2014): Rapidly and accurate estimate the average genome size (AGS) 
-of a microbial community from metagenomic data. 
+MicrobeCensus version 1.0.0 (28 April 2014): 
+Rapidly and accurate estimate the average genome size (AGS) of a microbial community from metagenomic data. 
 In short, AGS is estimated by aligning reads to a set of universal single-copy gene families. 
 Because these genes occur in nearly all Bacteria and Archaea, genome size is inversely proportional to 
 the fraction of reads which hit these genes.
 
 AUTHORS: Stephen Nayfach (snayfach@gmail.com)
 
-USAGE
-microbe_census [-options] <seqfile> <outfile> <nreads> <read_length> 
+Usage: microbe_census [-options] <seqfile> <outfile>
 
-Positional arguments:
-  <seqfile>        Input metagenome. Can be a multi FASTA or FASTQ file. 
+Arguments:
+  <seqfile>        Input metagenome. Can be a multi FASTA or FASTQ file.
                    Gzip (.gz) and Bzip (.bz2) file extensions recognized
   <outfile>        Tab delimited output file that includes AGS estimate.
-  <nreads>         Maximum number of reads to use from <seqfile>
-                   AGS can be accurately estimated using as few as 300,000 - 500,000 reads
-                   If you don't know the exact number of reads in <seqfile>, and would like to use all
-                   of the reads, set <nreads> to a value that exceeds the number of reads in <seqfile> (ex: 1e9)
-  <read_length>    Read length to use for AGS estimation. All reads sampled from <seqfile> will be trimmed to 
-                   this length. 
-                   Accepted values include: 50,60,70,80,90,100,110,120,130,140,150,175,200,225,250,300,350,400,450,500
-Optional arguments:
+
+Options:
   -h, --help       show this help message and exit
+  -n NREADS        number of reads to use for AGS estimation (default = 1e6)
+  -l READ_LENGTH   trim reads to this length (default = median read length)
+  -f FILE_TYPE     file type: fasta or fastq (default = autodetect)
+  -c QUAL_CODE     fastq quality score encoding: [sanger, solexa, illumina]
+                   (default: autodetect)
   -t THREADS       number of threads to use for database search (default = 1)
-  -k               keep temporary files (default: False)
-  -f FILE_TYPE     file type: fasta or fastq (default = 'fastq')
-  -q MIN_QUALITY   min base-level PHRED quality score: default = -5; no
+  -q MIN_QUALITY   minimum base-level PHRED quality score: default = -5; no
                    filtering
-  -m MEAN_QUALITY  min read-level PHRED quality score: default = -5; no
+  -m MEAN_QUALITY  minimum read-level PHRED quality score: default = -5; no
                    filtering
   -d               filter duplicate reads (default: False)
-  -c QUAL_CODE     quality score encoding: [sanger, solexa, illumina]
-                   (default: autodetect)
   -u MAX_UNKNOWN   max percent of unknown bases: default = 100%; no filtering
+  -k               keep temporary files (default: False)
 
 INSTALLATION
 Simply download our software package from github:
@@ -44,8 +39,7 @@ And add the path of the src directory to your PATH.
 
 REQUIREMENTS
 x86_64 Architecture
-Python 2.7.3
-Our software may work, but has not been tested on other versions of Python
+Python 2.7.3 (Other versions of Python may be OK, but have not been tested)
 
 RECOMMENDATIONS
 * Filter duplicate reads using the -d flag.

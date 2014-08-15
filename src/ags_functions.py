@@ -88,7 +88,7 @@ def auto_detect_read_length(p_reads, file_type, p_read_len):
     if median_read_length < valid_lengths[0]:
         sys.exit('Median read length is %s. Cannot compute AGS using reads shorter than 50 bp.' % str(median_read_length))
     for index, read_length in enumerate(valid_lengths):
-        if median_read_length > read_length:
+        if read_length > median_read_length:
             return valid_lengths[index-1]
     return valid_lengths[-1]
 
@@ -100,7 +100,6 @@ def auto_detect_file_type(p_reads):
     for line in f_in:
         if line[0] == '>': return 'fasta'
         else: return 'fastq'
-
 
 def auto_detect_fastq_format(p_reads, max_depth):
     """ Auto detect FASTQ file format (sanger, solexa, or illumina)

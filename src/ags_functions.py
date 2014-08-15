@@ -73,17 +73,24 @@ def clean_up(files):
         if os.path.isfile(file):
             os.remove(file)
 
-def auto_detect_read_length(p_reads, file_type):
+def auto_detect_read_length(p_reads, file_type, p_read_len):
     """ Auto detect median read length from first 10K reads in p_reads
         All reads will be trimmed to this length
     """
-    seq_lengths = []
+    valid_lengths = sorted(read_list(p_read_len, header=True, dtype='int'))
+    read_lengths = []
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
     for index, record in enumerate(Bio.SeqIO.parse(f_in, file_type)):
         if index == 10000: break
-        seq_lengths.append(len(record.seq))
-    return int(median(seq_lengths))
+        read_lengths.append(len(record.seq))
+    median_read_length = int(median(read_lengths))
+    if median_read_length < valid_lengths[0]:
+        sys.exit('Median read length is %s. Cannot compute AGS using reads shorter than 50 bp.' % str(median_read_length))
+    for index, read_length in enumerate(valid_lengths):
+        if median_read_length > read_length:
+            return valid_lengths[index-1]
+    return valid_lengths[-1]
 
 def auto_detect_file_type(p_reads):
     """ Auto detect file type [fasta or fastq] of p_reads

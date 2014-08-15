@@ -56,7 +56,7 @@ try:
     p_wkdir = os.path.dirname(p_out)
     nreads = options.nreads
     file_type = auto_detect_file_type(p_reads) if options.file_type is None else options.file_type
-    read_length = auto_detect_read_length(p_reads, file_type) if options.read_length is None else options.read_length
+    read_length = auto_detect_read_length(p_reads, file_type, p_read_len) if options.read_length is None else options.read_length
     threads = options.threads
     max_depth = 1000000                
     min_quality = int(options.min_quality)

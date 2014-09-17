@@ -51,20 +51,20 @@ parser.add_option("-k", dest="keep_tmp",     default=False,   help="keep tempora
 #   parse options
 (options, args) = parser.parse_args()
 try:
-    p_reads = args[0]
-    p_out = args[1]
-    p_wkdir = os.path.dirname(p_out)
-    nreads = options.nreads
-    file_type = auto_detect_file_type(p_reads) if options.file_type is None else options.file_type
-    read_length = auto_detect_read_length(p_reads, file_type, p_read_len) if options.read_length is None else options.read_length
-    threads = options.threads
-    max_depth = 1000000                
-    min_quality = int(options.min_quality)
-    mean_quality = float(options.mean_quality)
-    qual_code = options.qual_code
-    filter_dups = options.filter_dups
-    max_unknown = float(options.max_unknown)/100
-    keep_tmp = options.keep_tmp
+	p_reads = args[0]
+	p_out = args[1]
+	read_length = int(options.read_length) if options.read_length is not None else options.read_length
+	file_type = options.file_type
+	p_wkdir = os.path.dirname(p_out)
+	nreads = options.nreads
+	threads = options.threads
+	max_depth = 1000000
+	min_quality = int(options.min_quality)
+	mean_quality = float(options.mean_quality)
+	qual_code = options.qual_code
+	filter_dups = options.filter_dups
+	max_unknown = float(options.max_unknown)/100
+	keep_tmp = options.keep_tmp
 except Exception, e:
     print "\nIncorrect number of command line arguments."
     print "\nUsage: microbe_census [-options] <seqfile> <outfile>"
@@ -73,7 +73,7 @@ except Exception, e:
 
 #   check for valid values
 read_lengths = read_list(p_read_len, header=True, dtype='int')
-if read_length not in read_lengths:
+if read_length is not None and read_length not in read_lengths:
     sys.exit("Invalid read length. Choose a supported read length:\n\t" + str(read_lengths))
 
 if file_type == "fasta" and any([min_quality > -5, mean_quality > -5, qual_code is not None]):
@@ -82,7 +82,7 @@ if file_type == "fasta" and any([min_quality > -5, mean_quality > -5, qual_code 
 if qual_code not in ['sanger', 'solexa', 'illumina', None]:
     sys.exit("Invalid FASTQ quality encoding. Choose from: " + str(['sanger', 'solexa', 'illumina']) + " or do not specify to autodetect")
 
-if file_type not in ['fasta', 'fastq']:
+if file_type is not None and file_type not in ['fasta', 'fastq']:
     sys.exit("Invalid file type. Choose a supported file type: " + str(['fasta', 'fastq']))
 
 if threads < 1:
@@ -93,6 +93,11 @@ if nreads < 1:
 
 if not os.path.isfile(p_reads):
     sys.exit("Input file does not exist.")
+
+# autodetect certain parameters
+file_type = auto_detect_file_type(p_reads) if file_type is None else file_type
+read_length = auto_detect_read_length(p_reads, file_type, p_read_len) if read_length is None else read_length
+
 
 #######################################################################################
 #   MAIN

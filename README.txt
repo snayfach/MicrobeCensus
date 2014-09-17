@@ -2,6 +2,9 @@ DESCRIPTION
 MicrobeCensus version 1.0.0 (28 April 2014): 
 Rapidly and accurate estimate the average genome size (AGS) of a microbial community from metagenomic data. In short, AGS is estimated by aligning reads to a set of universal single-copy gene families. Because these genes occur in nearly all Bacteria and Archaea, genome size is inversely proportional to the fraction of reads which hit these genes.
 
+A preprint of our manuscript can be found in bioRxiv:
+http://biorxiv.org/content/biorxiv/early/2014/09/11/009001.full.pdf
+
 AUTHORS: Stephen Nayfach (snayfach@gmail.com)
 
 Usage: microbe_census [-options] <seqfile> <outfile>
@@ -15,6 +18,10 @@ Options:
   -h, --help       show this help message and exit
   -n NREADS        number of reads to use for AGS estimation (default = 1e6)
   -l READ_LENGTH   trim reads to this length (default = median read length)
+                   reads shorter than this length will be discarded
+                   supported values include: 
+                     50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 175, 
+                     200, 225, 250, 300, 350, 400, 450, 500
   -f FILE_TYPE     file type: fasta or fastq (default = autodetect)
   -c QUAL_CODE     fastq quality score encoding: [sanger, solexa, illumina]
                    (default: autodetect)
@@ -28,25 +35,35 @@ Options:
   -k               keep temporary files (default: False)
 
 INSTALLATION
-Simply download our software package from github:
+Download our software package from github:
 git clone git@github.com:snayfach/MicrobeCensus.git
 --OR--
 wget https://github.com/snayfach/MicrobeCensus/archive/master.zip
-And add the path of the src directory to your PATH.
+
+Add MicrobeCensus to your PATH:
+export PATH=$PATH:/path/to/MicrobeCensus/src
 
 REQUIREMENTS
-x86_64 Architecture
-Python 2.7.3 (Other versions of Python may be OK, but have not been tested)
+Linux x86_64 Architecture
+Python (tested on versions 2.6.6 and 2.7.3)
 
 RECOMMENDATIONS
 * Filter duplicate reads using the -d flag.
   Be aware that this can consume large amounts of memory (>2G) when searching many reads (>20M)  
 * Filter very low quality reads using -m 5 and -u 5.  
   Note that these options are only available for FASTQ files  
-* Limit the number of reads searched (<nreads>) to less than 5e6.  
-  We found that accurate estimates of AGS can be made using as few at 500K reads.  
+* Limit the number of reads searched (<nreads>) to less than 5M.  
+  We found that accurate estimates of AGS can be made using as few at 300-500K reads.  
 * Be sure to remove potential sources of contamination from your metagenome, including  
   adaptor sequence and possibly host DNA (in the case of a host-associated metagenome).  
 
+SOFTWARE SPEED
+1 CPU: ~830   reads/second
+2 CPU: ~1,300 reads/second
+4 CPU: ~1,800 reads/second
+8 CPU: ~2,000 reads/second
+* Software speed may depend on your system
+* Benchmarking was done on a server with 16 Intel Xeon X5560 2.80 GHz CPUs and 200 Gb of RAM running Ubuntu 10.04.4 LTS
+
 EXAMPLE USAGE
-See the example directory.
+The EXAMPLE.txt file in the example directory contains more detailed information on running MicrobeCensus with various options.

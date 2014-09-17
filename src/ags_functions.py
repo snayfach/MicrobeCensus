@@ -101,49 +101,47 @@ def auto_detect_file_type(p_reads):
         if line[0] == '>': return 'fasta'
         else: return 'fastq'
 
-def auto_detect_fastq_format(p_reads, max_depth):
-    """ Auto detect FASTQ file format (sanger, solexa, or illumina)
-        For details: http://en.wikipedia.org/wiki/FASTQ_format
-    """
-    print 'Detecting FASTQ format...'
-    # format specific characters
-    sanger   = set(list("""!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ"""))
-    solexa   = set(list(""";<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
-    illumina = set(list("""@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
-    formats  = {'sanger': sanger, 'solexa': solexa, 'illumina': illumina}
-    # open input stream
-    ext = p_reads.split('.')[-1]
-    f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
-    # loop over quality scores
-    i = 0; j = 0
-    for line in f_in:
-        i += 1
-        if i != 4: continue
-        for q in line.rstrip():
-            # look for incompatible formats
-            for format in formats.keys():
-                if q not in formats[format]:
-                    del formats[format]
-            if len(formats) == 1:
-                print '\t', formats.keys()[0]
-                return formats.keys()[0]
-            elif len(formats) == 0:
-                print '\t', 'Unrecognized character in quality string:', line.rstrip()
-                exit()
-        i = 0; j += 1
-        if j == max_depth:
-            break
-    # guess at format if not detected
-    guess = random.sample(formats.keys(), 1)[0]
-    print '\t', 'Ambiguous quality encoding, guessing:', guess
-    return guess
+def auto_detect_fastq_format(p_reads):
+	""" Auto detect FASTQ file format (sanger, solexa, or illumina)
+		For details: http://en.wikipedia.org/wiki/FASTQ_format
+	"""
+	max_depth = 1000000
+	# format specific characters
+	sanger   = set(list("""!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ"""))
+	solexa   = set(list(""";<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
+	illumina = set(list("""@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
+	formats  = {'sanger': sanger, 'solexa': solexa, 'illumina': illumina}
+	# open input stream
+	ext = p_reads.split('.')[-1]
+	f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
+	# loop over quality scores
+	i = 0; j = 0
+	for line in f_in:
+		i += 1
+		if i != 4: continue
+		for q in line.rstrip():
+			# look for incompatible formats
+			for format in formats.keys():
+				if q not in formats[format]:
+					del formats[format]
+			if len(formats) == 1:
+				return formats.keys()[0]
+			elif len(formats) == 0:
+				print '\t', 'Unrecognized character in quality string:', line.rstrip()
+				exit()
+		i = 0; j += 1
+		if j == max_depth:
+			break
+	# guess at format if not detected
+	guess = random.sample(formats.keys(), 1)[0]
+	return guess
 
-def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknown):
+def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknown, keep_tmp):
     """ Sample <nreads> of <read_length> from <p_reads>
         Write reads to tmpfile in <p_wkdir>
         Return path to tmpfile, sampled read_ids
     """
-    print 'Processing sequences...'
+    print 'Sampling & trimming reads...'
     # open input, output files
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
@@ -184,7 +182,7 @@ def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknow
         if read_id == nreads:
             break
     # print status: # of reads sampled, filtered
-    print '\t', too_short, 'reads shorter than specified read length and skipped'
+    print '\t', too_short, 'reads shorter than %s bp and skipped' % str(read_length)
     if filter_dups:
         print '\t', dups, 'duplicate reads found and skipped'
     if max_unknown < 1.0:
@@ -194,16 +192,16 @@ def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknow
         if keep_tmp is False: clean_up([p_out])
         sys.exit()
     else:
-        print '\t', read_id, str(read_length) + 'bp', 'reads sampled from seqfile'
+        print '\t', read_id, 'reads sampled from seqfile'
     # return file name, read ids
     return p_out, read_ids
 
-def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quality, filter_dups, max_unknown, fastq_format):
+def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quality, filter_dups, max_unknown, fastq_format, keep_tmp):
     """ Sample <nreads> of <read_length> from <p_reads> with bases of <min_quality>
         Write reads to tmpfile in <p_wkdir>
         Return path to tmpfile, sampled read_ids
     """
-    print 'Processing sequences...'
+    print 'Sampling & trimming reads...'
     # open input, output files
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
@@ -256,7 +254,7 @@ def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quali
         if read_id == nreads:
             break
     # print status: # of reads sampled, filtered
-    print '\t', too_short, 'reads shorter than specified read length and skipped'
+    print '\t', too_short, 'reads shorter than %s bp and skipped' % str(read_length)
     if filter_dups:
         print '\t', dups, 'duplicate reads found and skipped'
     if min_quality > -5 or mean_quality > -5 or max_unknown < 1.0:
@@ -266,7 +264,7 @@ def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quali
         if keep_tmp is False: clean_up([p_out])
         sys.exit()
     else:
-        print '\t', read_id, str(read_length) + 'bp', 'reads sampled from seqfile'
+        print '\t', read_id, 'reads sampled from seqfile'
     # return file name, read ids
     return p_out, read_ids
 
@@ -275,7 +273,7 @@ def search_seqs(reads, db, rapsearch, threads, keep_tmp, p_params):
         Writes search results to temporary file in dir of <reads>
         Returns path to <reads>.m8 and <reads>.aln
     """
-    print 'Searching marker proteins...'
+    print 'Searching reads against marker proteins...'
     out = reads
     devnull = open('/dev/null')
     arguments = {'rapsearch': rapsearch, 'reads':reads, 'db':db, 'out':out, 'threads':threads}
@@ -283,8 +281,13 @@ def search_seqs(reads, db, rapsearch, threads, keep_tmp, p_params):
     process = subprocess.Popen(command, shell=True, stdout=devnull, stderr=devnull)
     retcode = process.wait()
     if retcode == 0:
-        if keep_tmp is False: clean_up([reads])
-        return (out+'.m8', out+'.aln')
+		if keep_tmp is False: clean_up([reads])
+		hits = []
+		for line in open(out+'.m8'):
+			if line[0] != '#': hits.append(line.split()[0])
+		distinct_hits = len(set(hits))
+		print '\t%s reads hit marker proteins' % str(distinct_hits)
+		return (out+'.m8', out+'.aln')
     else:
         print '** Error: Database search has exited with an error!'
         if keep_tmp is False: clean_up([reads, out+'.m8', out+'.aln'])
@@ -315,7 +318,7 @@ def classify_reads(results, alignments, read_length, p_params, p_gene2fam, p_gen
         Use class parameters specific to read length and marker family
         Returns dic {read_id:[fam_id, aln, cov, score]}
     """
-    print 'Filtering alignments...'
+    print 'Filtering hits...'
     # read in lookups
     optpars  = find_opt_pars(p_params, read_length)
     gene2fam = read_dic(p_gene2fam, header=False, dtype='char')
@@ -350,7 +353,7 @@ def classify_reads(results, alignments, read_length, p_params, p_gene2fam, p_gen
         print '** Error: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.'
         sys.exit()
     else:
-        print '\t', str(len(best_hits))+'/'+str(n_reads_sampled), 'reads classified into a single-copy gene family'
+        print '\t', str(len(best_hits)), 'reads assigned into a single-copy gene family'
     return best_hits
 
 def resample_hits(best_hits, read_ids):

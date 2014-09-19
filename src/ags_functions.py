@@ -41,6 +41,7 @@ try:
 except Exception:
     print 'Module "optparse" not installed'; exit()
 
+
 #######################################################################################
 #   FUNCTIONS
 
@@ -353,7 +354,7 @@ def classify_reads(results, alignments, read_length, p_params, p_gene2fam, p_gen
         print '** Error: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.'
         sys.exit()
     else:
-        print '\t', str(len(best_hits)), 'reads assigned into a single-copy gene family'
+        print '\t', str(len(best_hits)), 'reads assigned to a single-copy gene family'
     return best_hits
 
 def resample_hits(best_hits, read_ids):

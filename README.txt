@@ -44,7 +44,7 @@ Add MicrobeCensus to your PATH:
 export PATH=$PATH:/path/to/MicrobeCensus/src
 
 REQUIREMENTS
-Linux x86_64 Architecture
+Linux or Mac OSX with x86_64 Architecture
 Python (tested on versions 2.6.6 and 2.7.3)
 
 RECOMMENDATIONS
@@ -62,8 +62,15 @@ SOFTWARE SPEED
 2 CPU: ~1,300 reads/second
 4 CPU: ~1,800 reads/second
 8 CPU: ~2,000 reads/second
+
+* Benchmarking was performed on a dataset containing 100 bp reads. Longer reads will have lower throughput.
 * Software speed may depend on your system
-* Benchmarking was done on a server with 16 Intel Xeon X5560 2.80 GHz CPUs and 200 Gb of RAM running Ubuntu 10.04.4 LTS
+
+OUTPUT FILE FORMAT
+Tab delimited file with the following fields:
+reads_sampled - the number of trimmed reads that were sampled from the input metagenome
+read_length - all reads were trimmed to this length
+avg_size - the size of microbial genomes present in input metagenome
 
 EXAMPLE USAGE
-The EXAMPLE.txt file in the example directory contains more detailed information on running MicrobeCensus with various options.
+The EXAMPLE.txt file contains more detailed information on running MicrobeCensus with various options.

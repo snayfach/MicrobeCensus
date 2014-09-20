@@ -1,6 +1,9 @@
 DESCRIPTION
 MicrobeCensus version 1.0.0 (28 April 2014): 
-Rapidly and accurate estimate the average genome size (AGS) of a microbial community from metagenomic data. In short, AGS is estimated by aligning reads to a set of universal single-copy gene families. Because these genes occur in nearly all Bacteria and Archaea, genome size is inversely proportional to the fraction of reads which hit these genes. 
+Rapidly and accurate estimate the average genome size (AGS) of a microbial community from metagenomic data. 
+In short, AGS is estimated by aligning reads to a set of universal single-copy gene families. Because these 
+genes occur in nearly all Bacteria and Archaea, genome size is inversely proportional to the fraction of 
+reads which hit these genes. 
 
 A preprint of our manuscript can be found in bioRxiv:
 http://biorxiv.org/content/biorxiv/early/2014/09/11/009001.full.pdf

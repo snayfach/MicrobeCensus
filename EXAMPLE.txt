@@ -14,21 +14,21 @@ Add src directory to your PATH: export PATH=$PATH:/your_install_dir/MicrobeCensu
 EXAMPLES
 1. Run with default options using either FASTA or FASTQ input files
 
-microbe_census example.fq.gz fastq_example.out
+microbe_census.py example.fq.gz fastq_example.out
    or
-microbe_census example.fa.gz fasta_example.out
+microbe_census.py example.fa.gz fasta_example.out
 
 2. Run with recommended quality filtering options if sequences are in FASTQ format
     -filter exact duplicates (-d)
     -filter reads with an unknown base-call (N) (-u 0)
     -filter reads with mean quality < 5 (-m 5)
 
-microbe_census -d -u 0 -m 5 example.fq.gz fastq_example.out
+microbe_census.py -d -u 0 -m 5 example.fq.gz fastq_example.out
 
 
 3. Run with different number of reads and read length
 
-microbe_census -n 1000 -l 500 example.fa.gz fastq_example.out
+microbe_census.py -n 1000 -l 500 example.fa.gz fastq_example.out
 
 
 

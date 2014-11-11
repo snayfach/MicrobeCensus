@@ -36,7 +36,7 @@ Options:
 
 INSTALLATION
 Download our software package from github:
-git clone git@github.com:snayfach/MicrobeCensus.git
+git clone https://github.com/snayfach/MicrobeCensus
 --OR--
 wget https://github.com/snayfach/MicrobeCensus/archive/master.zip
 

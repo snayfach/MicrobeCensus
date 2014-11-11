@@ -1,7 +1,13 @@
 DATA NORMALIZATION
-Along with library size and gene length, AGS is a source of bias when conducting gene-centric comparative metgenomic studies. This is described nicely in a 2010 ISME paper by Bezteri et al. Specifically, a gene which is present at equal copy-number will be sequenced more often from a community with a small AGS relative to a community with a large AGS. For example, essential single-copy genes will appear more abundant in communities with small genomes.
+Along with library size and gene length, AGS is a source of bias when conducting gene-centric comparative 
+metgenomic studies. This is described nicely in a 2010 ISME paper by Bezteri et al. Specifically, a gene which 
+is present at equal copy-number will be sequenced more often from a community with a small AGS relative to a 
+community with a large AGS. For example, essential single-copy genes will appear more abundant in communities 
+with small genomes.
 
-To correct for this bias, along with library size and gene length, we propose the statistic RPKG (reads per kb per genome). This is similar to the commonly used statistic RPKM, but instead of dividing by the number of mapped reads, we divide by the expected number of genomes sequenced:
+To correct for this bias, along with library size and gene length, we propose the statistic RPKG (reads per kb per genome). 
+This is similar to the commonly used statistic RPKM, but instead of dividing by the number of mapped reads, we divide by 
+the expected number of genomes sequenced:
 
 RPKG = (reads mapped to gene)/(gene length in kb)/(genomes sequenced)
    and

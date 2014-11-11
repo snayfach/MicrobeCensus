@@ -46,6 +46,8 @@ export PATH=$PATH:/path/to/MicrobeCensus/src
 REQUIREMENTS
 Linux or Mac OSX with x86_64 Architecture
 Python (tested on versions 2.6.6 and 2.7.3)
+Biopython
+Numpy
 
 RECOMMENDATIONS
 * Filter duplicate reads using the -d flag.

@@ -41,9 +41,12 @@ if operating_system not in ['Linux', 'Darwin']:
 #######################################################################################
 #   FILEPATHS TO SRC AND DATA FILES
 
-src_dir     = os.path.dirname(os.path.realpath(sys.argv[0]))
-data_dir    = os.path.join(os.path.dirname(src_dir), 'data')
-p_rapsearch = os.path.join(src_dir,  'rapsearch_'+operating_system+'_2.15')
+main_dir    = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
+
+src_dir     = os.path.join(main_dir, 'src')
+bin_dir     = os.path.join(main_dir, 'bin')
+data_dir    = os.path.join(main_dir, 'data')
+p_rapsearch = os.path.join(bin_dir,  'rapsearch_'+operating_system+'_2.15')
 p_db        = os.path.join(data_dir, 'rapdb_2.15')    
 p_gene2fam  = os.path.join(data_dir, 'gene_fam.map')
 p_gene2len  = os.path.join(data_dir, 'gene_len.map')

@@ -1,0 +1,80 @@
+DESCRIPTION
+Train MicrobeCensus using set of user-defined genomes and marker genes
+This workflow will generate all the files needed to run MicrobeCensus using your marker genes
+Software designed to run in parallel on a multi-core unix server
+
+REQUIRED PYTHON LIBRARIES
+BioPython
+numpy
+multiprocessing
+
+INPUT DATA
+Test input data has been provided in order to test all scripts in workflow. These files should be replaced
+with the genomes and gene families you with to train on:
+
+MicrobeCensus/training/input/genomes
+   -directory of genomes which will be used to train MicrobeCensus
+   -30 genomes are provided, but these should really be supplied by the user
+   -genomes should be complete, NOT draft
+   -files should be named "genome_name".fna.gz 
+
+MicrobeCensus/training/input/gene_fams
+   -directory of gene families which will be used to train MicrobeCensus
+   -30 gene families are provided, but these should really be supplied by the user
+   -each file within directory contains multi-fasta file of protein sequences for a given marker gene family
+   -files should be named "gene_fam".faa.gz
+
+
+WORKFLOW
+1. Simulate shotgun libraries from input genomes for each desired read length
+   Run multiple times for different read lengths if you intend to use MicrobeCensus for different read lengths or sequencing technologies
+   About 10-20x coverage is suggested for 100 bp libraries. We suggest additional coverage for longer reads
+   By default reads are simulated without error, but this can be manually changed
+   Write simulated libraries to: MicrobeCensus/training/intermediate/reads
+
+   python MicrobeCensus/src/sim_reads.py <threads> <read_length> <coverage>
+   Ex: python MicrobeCensus/src/sim_reads.py 10 100 1
+
+2. Build RAPsearch2 database of marker genes
+   Use RAPsearch2 to search all simulated libraries in: MicrobeCensus/training/intermediate/reads 
+   Versus marker genes in: MicrobeCensus/training/input/gene_fams
+   Write search results to: MicrobeCensus/training/intermediate/search
+
+   python MicrobeCensus/src/search_reads.py <threads>
+   Ex: python MicrobeCensus/src/search_reads.py 10
+
+3. Count number of reads classified into each marker gene family across range of mapping parameters
+   Mapping parameters include minimum bit-score, minimum alignment coverage, and maximum percent identity
+   The range of parameters tested is hard-coded, but can be manually changed
+   Write results to: MicrobeCensus/training/intermediate/hits
+   
+   python MicrobeCensus/src/class_reads <threads>
+   Ex: python MicrobeCensus/src/class_reads.py 10
+
+4. Use x-fold cross validation to identify optimal mapping parameters: MicrobeCensus/training/output/pars.map
+   Find model coefficients: MicrobeCensus/training/output/coefficients.map
+   Find and write AGS predictions: MicrobeCensus/training/output/training_preds.map
+
+   python MicrobeCensus/src/optimize_parameters.py <threads> <xfold>
+   Ex: python MicrobeCensus/src/optimize_parameters.py 10 10
+
+5. Use training predictions to estimate weights for each gene model to minimze median unsigned squared error
+   This weighting can reduce the influence of marker genes with low predictive ability. 
+   For example, some of your specified marker genes may not be perfectly universal or single-copy.
+   Write weights to: MicrobeCensus/training/output/weights.map
+
+   Rscript MicrobeCensus/src/optimize_weights.R
+
+6. To run MicrobeCensus using newly trained models and gene families, simply copy data in MicrobeCensus/training/output to MicrobeCensus/data:
+   cp MicrobeCensus/training/output/* MicrobeCensus/data
+
+   and run MicrobeCensus as you normally would:
+   MicrobeCensus/src/microbe_census.py [-options] <seqfile> <outfile>
+
+
+
+
+
+
+
+

@@ -1,69 +1,63 @@
+# MicrobeCensus - estimation of average genome size from shotgun sequence data
+# Copyright (C) 2013-2014 Stephen Nayfach
+# Freely distributed under the GNU General Public License (GPLv3)
+
 #######################################################################################
 #   LIBRARIES
 
 try:
     import sys
 except Exception:
-    print 'Module "sys" not installed'; exit()
+    print ('Module "sys" not installed'); exit()
 
 try:
     import gzip
 except Exception:
-    print 'Module "gzip" not installed'; exit()
+    print ('Module "gzip" not installed'); exit()
 
 try:
     import random
 except Exception:
-    print 'Module "random" not installed'; exit()
+    print ('Module "random" not installed'); exit()
 
 try:
     import subprocess
 except Exception:
-    print 'Module "subprocess" not installed'; exit()
+    print ('Module "subprocess" not installed'); exit()
     
 try:
     import os
 except Exception:
-    print 'Module "os" not installed'; exit()
+    print ('Module "os" not installed'); exit()
     
 try:
     import bz2
 except Exception:
-    print 'Module "bz2" not installed'; exit()     
+    print ('Module "bz2" not installed'); exit()
     
 try:
-    import Bio.SeqIO
+    from Bio.SeqIO import parse
 except Exception:
-    print 'Module "Bio.SeqIO" not installed'; exit()
+    print ('Module "Bio.SeqIO" not installed'); exit()
     
 try:
     import optparse
 except Exception:
-    print 'Module "optparse" not installed'; exit()
+    print ('Module "optparse" not installed'); exit()
+
+try:
+	from numpy import median
+	from numpy import mean
+	from numpy import std
+except Exception:
+    print ('Module "numpy" not installed'); exit()
 
 
 #######################################################################################
 #   FUNCTIONS
 
-def mean_stddev(x):
-    """ Calculate standard deviation and mean of data in x
-    """
-    n = float(len(x))
-    mean = sum(x)/n
-    std  = sqrt(sum([(a - mean)**2 for a in x])/ n)
-    return mean, std
-
-def median(x):
-    """ Find the median value from unsorted list of numeric values """
-    x = sorted(x)
-    if len(x) % 2 == 1:
-        return x[(len(x)+1)/2-1]
-    else:
-        lower = x[len(x)/2-1]; upper = x[len(x)/2]
-        return (float(lower + upper))/2
-
 def mad(x, const = 1.48):
-    """ Calculate the median absolute deviation (MAD) of x
+    """ Calculate the median absolute deviation (MAD) of <x>
     """
     return const * median([abs(i - median(x)) for i in x])
 
@@ -75,14 +69,14 @@ def clean_up(files):
             os.remove(file)
 
 def auto_detect_read_length(p_reads, file_type, p_read_len):
-    """ Auto detect median read length from first 10K reads in p_reads
-        All reads will be trimmed to this length
+    """ Find median read length from first 10K reads in <p_reads>
+		Value rounded down to nearest legal read length listed in <p_read_len>
     """
-    valid_lengths = sorted(read_list(p_read_len, header=True, dtype='int'))
+    valid_lengths = sorted(read_list(p_read_len, header=False, dtype='int'))
     read_lengths = []
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
-    for index, record in enumerate(Bio.SeqIO.parse(f_in, file_type)):
+    for index, record in enumerate(parse(f_in, file_type)):
         if index == 10000: break
         read_lengths.append(len(record.seq))
     median_read_length = int(median(read_lengths))
@@ -94,7 +88,7 @@ def auto_detect_read_length(p_reads, file_type, p_read_len):
     return valid_lengths[-1]
 
 def auto_detect_file_type(p_reads):
-    """ Auto detect file type [fasta or fastq] of p_reads
+    """ Detect file type [fasta or fastq] of <p_reads>
     """
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads) 
@@ -103,7 +97,7 @@ def auto_detect_file_type(p_reads):
         else: return 'fastq'
 
 def auto_detect_fastq_format(p_reads):
-	""" Auto detect FASTQ file format (sanger, solexa, or illumina)
+	""" Detect quality score encoding of <p_reads> file (sanger, solexa, or illumina)
 		For details: http://en.wikipedia.org/wiki/FASTQ_format
 	"""
 	max_depth = 1000000
@@ -128,7 +122,7 @@ def auto_detect_fastq_format(p_reads):
 			if len(formats) == 1:
 				return formats.keys()[0]
 			elif len(formats) == 0:
-				print '\t', 'Unrecognized character in quality string:', line.rstrip()
+				print ('\t', 'Unrecognized character in quality string:', line.rstrip())
 				exit()
 		i = 0; j += 1
 		if j == max_depth:
@@ -142,7 +136,7 @@ def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknow
         Write reads to tmpfile in <p_wkdir>
         Return path to tmpfile, sampled read_ids
     """
-    print 'Sampling & trimming reads...'
+    print ('Sampling & trimming reads...')
     # open input, output files
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
@@ -155,7 +149,7 @@ def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknow
     too_short = 0
     low_qual = 0
     seqs = set([])
-    for record in Bio.SeqIO.parse(f_in, "fasta"):
+    for record in parse(f_in, "fasta"):
         # parse record
         id = str(record.id)
         sequence = record.seq
@@ -183,17 +177,17 @@ def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknow
         if read_id == nreads:
             break
     # print status: # of reads sampled, filtered
-    print '\t', too_short, 'reads shorter than %s bp and skipped' % str(read_length)
+    print ('\t%s reads shorter than %s bp and skipped' % (too_short, read_length))
     if filter_dups:
-        print '\t', dups, 'duplicate reads found and skipped'
+        print ('\t%s duplicate reads found and skipped' % dups)
     if max_unknown < 1.0:
-        print '\t', low_qual, 'low quality reads found and skipped'
+        print ('\t%s low quality reads found and skipped' % low_qual)
     if read_id == 0:
-        print '\t', '** Error: No reads remaining after filtering!'
+        print ('\t** Error: No reads remaining after filtering!')
         if keep_tmp is False: clean_up([p_out])
         sys.exit()
     else:
-        print '\t', read_id, 'reads sampled from seqfile'
+        print ('\t%s reads sampled from seqfile' % read_id)
     # return file name, read ids
     return p_out, read_ids
 
@@ -202,7 +196,7 @@ def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quali
         Write reads to tmpfile in <p_wkdir>
         Return path to tmpfile, sampled read_ids
     """
-    print 'Sampling & trimming reads...'
+    print ('Sampling & trimming reads...')
     # open input, output files
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads)
@@ -218,7 +212,7 @@ def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quali
     dups = 0
     low_qual = 0
     too_short = 0
-    for record in Bio.SeqIO.parse(f_in, encoding):
+    for record in parse(f_in, encoding):
         # parse record
         id = str(record.id)
         sequence = record.seq
@@ -255,44 +249,45 @@ def process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quali
         if read_id == nreads:
             break
     # print status: # of reads sampled, filtered
-    print '\t', too_short, 'reads shorter than %s bp and skipped' % str(read_length)
+    print ('\t%s reads shorter than %s bp and skipped' % (too_short, read_length))
     if filter_dups:
-        print '\t', dups, 'duplicate reads found and skipped'
+        print ('\t%s duplicate reads found and skipped' % dups)
     if min_quality > -5 or mean_quality > -5 or max_unknown < 1.0:
-        print '\t', low_qual, 'low quality reads found and skipped'
+        print ('\t%s low quality reads found and skipped' % low_qual)
     if read_id == 0:
-        print '\t', '** Error: No reads remaining after filtering!'
+        print ('\t** Error: No reads remaining after filtering!')
         if keep_tmp is False: clean_up([p_out])
         sys.exit()
     else:
-        print '\t', read_id, 'reads sampled from seqfile'
+        print ('\t%s reads sampled from seqfile' % read_id)
     # return file name, read ids
     return p_out, read_ids
 
 def search_seqs(reads, db, rapsearch, threads, keep_tmp, p_params):
-    """ Searches fasta file <reads> against <db> using <threads> 
-        Writes search results to temporary file in dir of <reads>
-        Returns path to <reads>.m8 and <reads>.aln
-    """
-    print 'Searching reads against marker proteins...'
-    out = reads
-    devnull = open('/dev/null')
-    arguments = {'rapsearch': rapsearch, 'reads':reads, 'db':db, 'out':out, 'threads':threads}
-    command = "%(rapsearch)s -q %(reads)s -d %(db)s -o %(out)s -z %(threads)s -e 1 -t n -p f -b 0" % arguments
-    process = subprocess.Popen(command, shell=True, stdout=devnull, stderr=devnull)
-    retcode = process.wait()
-    if retcode == 0:
-		if keep_tmp is False: clean_up([reads])
+	""" Searches fasta file <reads> against <db> using <threads>
+		Writes search results to temporary file in dir of <reads>
+		Returns path to <reads>.m8 and <reads>.aln
+	"""
+	print ('Searching reads against marker proteins...')
+	out = reads
+	devnull = open('/dev/null')
+	arguments = {'rapsearch': rapsearch, 'reads':reads, 'db':db, 'out':out, 'threads':threads}
+	command = "%(rapsearch)s -q %(reads)s -d %(db)s -o %(out)s -z %(threads)s -e 1 -t n -p f -b 0" % arguments
+	process = subprocess.Popen(command, shell=True, stdout=devnull, stderr=devnull)
+	retcode = process.wait()
+	if retcode == 0:
+		if keep_tmp is False:
+			clean_up([reads])
 		hits = []
 		for line in open(out+'.m8'):
 			if line[0] != '#': hits.append(line.split()[0])
 		distinct_hits = len(set(hits))
-		print '\t%s reads hit marker proteins' % str(distinct_hits)
+		print ('\t%s reads hit marker proteins' % str(distinct_hits))
 		return (out+'.m8', out+'.aln')
-    else:
-        print '** Error: Database search has exited with an error!'
-        if keep_tmp is False: clean_up([reads, out+'.m8', out+'.aln'])
-        sys.exit()
+	else:
+		print ('** Error: Database search has exited with an error!')
+		if keep_tmp is False: clean_up([reads, out+'.m8', out+'.aln'])
+		sys.exit()
 
 def gmaxaln_cov(aln, read_length, target_len, query_start, query_stop, target_start, target_stop):
     """ Find the aln cov between query and target
@@ -315,11 +310,11 @@ def gmaxaln_cov(aln, read_length, target_len, query_start, query_stop, target_st
     return aln/maxaln
 
 def classify_reads(results, alignments, read_length, p_params, p_gene2fam, p_gene2len, keep_tmp, n_reads_sampled):
-    """ Parse and filter results, classify reads into families
-        Use class parameters specific to read length and marker family
-        Returns dic {read_id:[fam_id, aln, cov, score]}
+    """ Find best hit for each read from <results>
+        Use thresholds listed in <p_params> to classify reads into marker families. These are specific to each family and read length
+        Return dictionary of classified reads {read_id:[fam_id, aln, cov, score]}
     """
-    print 'Filtering hits...'
+    print ('Filtering hits...')
     # read in lookups
     optpars  = find_opt_pars(p_params, read_length)
     gene2fam = read_dic(p_gene2fam, header=False, dtype='char')
@@ -351,43 +346,15 @@ def classify_reads(results, alignments, read_length, p_params, p_gene2fam, p_gen
     # check that at least 1 read passed filters
     if keep_tmp is False: clean_up([results, alignments])
     if len(best_hits) == 0:
-        print '** Error: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.'
+        print ('** Error: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.')
         sys.exit()
     else:
-        print '\t', str(len(best_hits)), 'reads assigned to a single-copy gene family'
+        print ('\t%s reads assigned to a marker protein' % len(best_hits))
     return best_hits
-
-def resample_hits(best_hits, read_ids):
-    """ Find best hit for each bootstrapped query
-        Returns list [fam_id, aln, cov, score]
-    """
-    # randomly sample read_ids for bootstrapping
-    random_reads = {}
-    for i in range(len(read_ids)):
-        read_id = random.sample(read_ids, 1)[0]
-        if read_id not in random_reads:
-            random_reads[read_id] = 1
-        else:
-            random_reads[read_id] += 1
-    # find best hits
-    resampled_hits = {}
-    for rand_read_id, n in random_reads.iteritems():
-        if rand_read_id in best_hits:
-            for i in range(n):
-                resampled_read_id = rand_read_id + '_' + str(n)
-                resampled_hits[resampled_read_id] = best_hits[rand_read_id]
-        else:
-            continue
-    # check that at least 1 filtered read was selected
-    if len(resampled_hits) == 0:
-        print '**Error: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.'
-        sys.exit()
-    return resampled_hits
            
 def aggregate_hits(best_hits, read_length, p_params):
-    """ Get sum of alignments to marker families from best hits 
-        Sum the alignment statistic (hits, cov, aln) specific to read length and marker family
-        Returns agg_hits[fam_id] = hits
+    """ Sum # of alignments to each marker family from <best_hits>
+        Return dictionary of aggregated hits {fam_id:hits}
     """
     optpars = find_opt_pars(p_params, read_length)
     agg_hits = {}
@@ -398,26 +365,32 @@ def aggregate_hits(best_hits, read_length, p_params):
     return agg_hits
 
 def pred_genome_size(agg_hits, n_reads_sampled, read_length, p_coeffs, p_weights):
-    """ Return the average genome size of input metagenome
+    """ 
+		Use linear models to estimate AGS based on the number of hits/bp to each marker (j):
+			Rate_j = hits_j/bp
+			AGS_j = Coefficient_j/Rate_j
+			Model coefficients are listed in <p_coeffs>
+		Remove outlier predictions from [AGS_1, AGS_1, ..., AGS_30]
+		Take a weighted average across remaining predictions:
+			AGS = Sum{j=1 to 30} AGS_j * Weight_j
+			Model weights are listed in <p_weights>
     """
-    print 'Computing average genome size..'
+    print ('Computing average genome size..')
     # read in model coefficients and weights
     coeffs  = read_dic(p_coeffs,  header=False, dtype='float')
     weights = read_dic(p_weights, header=False, dtype='float')
-    
-    # predict genome sizes for each marker
+    # predict average genome size for each marker
     preds = {}
     for fam_id in agg_hits.keys():
         coeff   = coeffs[str(read_length) + '_' + fam_id]
         hits    = agg_hits[fam_id]
         rate    = hits/(n_reads_sampled * read_length)
         if rate == 0:
-            print '\t**Warning: no hits to gene', fam_id + '. Skipping.'
+            print ('\t**Warning: no hits to gene', fam_id + '. Skipping.')
             continue
         else:
             pred = coeff/rate
             preds[fam_id] = pred
-    
     # take weighted average across predictions & remove outliers   
     pred_size   = 0
     mad_pred    = mad(preds.values())
@@ -431,26 +404,6 @@ def pred_genome_size(agg_hits, n_reads_sampled, read_length, p_coeffs, p_weights
             sum_weights += weights[str(read_length)+'_'+fam_id]
     pred_size = pred_size/sum_weights
     return pred_size
-
-def bootstrapping(best_hits, read_ids, read_length, n_reads_sampled, nboot):
-    """ 
-        For each boostrap iteration:
-            1. Sample reads with replacement from <best_hits> 
-            2. Aggregate hits to each family
-            3. Estimate coverage and genome size using each family
-            4. Take a weighted average of estimates
-        Return the mean coverage and genome size across bootstrap iterations
-    """
-    print 'Bootstrapping...'
-    boot_coverage = []
-    boot_avg_size = []
-    for n in range(nboot):
-        resampled_hits                 = resample_hits(best_hits, read_ids)
-        agg_hits                       = aggregate_hits(best_hits, read_length)
-        avg_size                       = pred_genome_size(agg_hits, n_reads_sampled, read_length)
-        boot_avg_size.append(avg_size)
-    mean_avg_size, stddev_avg_size     = mean_stddev(boot_avg_size)
-    return mean_avg_size, stddev_avg_size
 
 def write_results(p_out, n_reads_sampled, read_length, avg_size, keep_tmp, p_results, p_aln):
     """ Write avg genome size to tab delimited text file

@@ -7,7 +7,7 @@ http://biorxiv.org/content/biorxiv/early/2014/09/11/009001.full.pdf
 
 AUTHORS: Stephen Nayfach (snayfach@gmail.com)
 
-Usage: microbe_census [-options] <seqfile> <outfile>
+Usage: microbe_census.py [-options] <seqfile> <outfile>
 
 Arguments:
   <seqfile>        Input metagenome. Can be a multi FASTA or FASTQ file.

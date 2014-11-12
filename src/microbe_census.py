@@ -140,7 +140,7 @@ if fastq_format is None and file_type == 'fastq':
 
 # print out copyright information
 print ("\nMicrobeCensus - estimation of average genome size from shotgun sequence data")
-print ("version 1.0.0 (April 2014); github.com/snayfach/MicrobeCensus")
+print ("version 1.2.1 (November 2014); github.com/snayfach/MicrobeCensus")
 print ("Copyright (C) 2013-2014 Stephen Nayfach")
 print ("Freely distributed under the GNU General Public License (GPLv3)")
 

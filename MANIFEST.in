@@ -1,0 +1,9 @@
+include EXAMPLE.txt
+include NORMALIZATION.txt
+include LICENSE.txt
+include TRAINING.txt
+recursive-include bin *
+recursive-include data *
+recursive-include example *
+recursive-include src *.py *.R
+recursive-include training *

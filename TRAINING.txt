@@ -10,7 +10,7 @@ multiprocessing
 
 INPUT DATA
 Test input data has been provided in order to test all scripts in workflow. These files should be replaced
-with the genomes and gene families you with to train on:
+with the genomes and gene families you wish to train on:
 
 MicrobeCensus/training/input/genomes
    -directory of genomes which will be used to train MicrobeCensus
@@ -58,9 +58,10 @@ WORKFLOW
    python MicrobeCensus/src/optimize_parameters.py <threads> <xfold>
    Ex: python MicrobeCensus/src/optimize_parameters.py 10 10
 
-5. Use training predictions to estimate weights for each gene model to minimze median unsigned squared error
+5. Optimize weights for each gene model to minimze median unsigned prediction error for simulated libraries
    This weighting can reduce the influence of marker genes with low predictive ability. 
    For example, some of your specified marker genes may not be perfectly universal or single-copy.
+   These genes would recieve low weights, and therefore not contribute much to the estimated AGS.
    Write weights to: MicrobeCensus/training/output/weights.map
 
    Rscript MicrobeCensus/src/optimize_weights.R

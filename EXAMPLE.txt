@@ -25,10 +25,9 @@ microbe_census.py example.fa.gz fasta_example.out
 
 microbe_census.py -d -u 0 -m 5 example.fq.gz fastq_example.out
 
-
 3. Run with different number of reads and read length
 
-microbe_census.py -n 1000 -l 500 example.fa.gz fastq_example.out
+microbe_census.py -n 1000 -l 500 example.fa.gz fasta_example.out
 
 
 

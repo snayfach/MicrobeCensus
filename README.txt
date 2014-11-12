@@ -1,6 +1,10 @@
 DESCRIPTION
-MicrobeCensus version 1.0.0 (28 April 2014): 
-Rapidly and accurate estimate the average genome size (AGS) of a microbial community from metagenomic data. In short, AGS is estimated by aligning reads to a set of universal single-copy gene families. Because these genes occur in nearly all Bacteria and Archaea, genome size is inversely proportional to the fraction of reads which hit these genes. 
+MicrobeCensus version 1.2.1 (11 November 2014): 
+Rapidly and accurate estimate the average genome size (AGS) of a microbial 
+community from metagenomic data. In short, AGS is estimated by aligning reads 
+to a set of universal single-copy gene families. Because these genes occur in 
+nearly all Bacteria and Archaea, genome size is inversely proportional to the 
+fraction of reads which hit these genes. 
 
 A preprint of our manuscript can be found in bioRxiv:
 http://biorxiv.org/content/biorxiv/early/2014/09/11/009001.full.pdf
@@ -35,19 +39,35 @@ Options:
   -k               keep temporary files (default: False)
 
 INSTALLATION
-Download our software package from github:
-git clone https://github.com/snayfach/MicrobeCensus
---OR--
-wget https://github.com/snayfach/MicrobeCensus/archive/master.zip
 
-Add MicrobeCensus to your PATH:
-export PATH=$PATH:/path/to/MicrobeCensus/src
+Option A. From PyPI:
+Download our package
+   wget https://pypi.python.org/packages/source/M/MicrobeCensus/MicrobeCensus-1.2.1.tar.gz
+Unpack tarball
+   tar -zxvf MicrobeCensus-1.2.1.tar.gz
+Move to main directory
+   cd MicrobeCensus-1.2.1
+Install dependencies
+   python setup.py install
+Add to MicrobeCensus to your path
+   export PATH=$PATH:/your/install/dir/MicrobeCensus-1.2.1/src
+
+Option B. From GitHub:
+Download our package
+   git clone https://github.com/snayfach/MicrobeCensus
+Move to main directory
+   cd MicrobeCensus
+Install dependencies
+   python setup.py install
+Add to MicrobeCensus to your path
+   export PATH=$PATH:/your/install/dir/MicrobeCensus/src
+
 
 REQUIREMENTS
 Linux or Mac OSX with x86_64 Architecture
 Python (tested on versions 2.6.6 and 2.7.3)
-Biopython
-Numpy
+biopython
+numpy
 
 RECOMMENDATIONS
 * Filter duplicate reads using the -d flag.
@@ -83,4 +103,14 @@ The EXAMPLE.txt file contains more detailed information on running MicrobeCensus
 
 CORRECTING FOR AGS
 The NORMALIZATION.txt file contains detailed information on how to correct for AGS in your data.
+
+TRAINING MICROBECENSUS FOR NEW MARKER GENES
+The TRAINING.txt file contains detailed information on how to train MicrobeCensus using different marker genes
+and/or training genomes.
+
+
+
+
+
+
 

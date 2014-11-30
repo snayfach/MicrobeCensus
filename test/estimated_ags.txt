@@ -1,0 +1,2 @@
+reads_sampled	read_length	avg_size
+70623	100	3529387.52709

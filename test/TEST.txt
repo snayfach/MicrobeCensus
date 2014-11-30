@@ -1,0 +1,18 @@
+DESCRIPTION
+Test MicrobeCensus on a synthetic metagenome with a known AGS (3,530,599 bp).
+If MicrobeCensus is running properly, it should produce an estimated AGS of 3,529,387 (0.3% error) when run with default parameters.
+
+COMMAND
+microbe_cenus.py sim_metagenome.fa.gz estimated_ags.txt
+
+FILES
+true_ags.txt
+-True average genome size of community (3,530,599 bp)
+
+mock_community.txt
+-Relative abundance and genome sizes of 20 members in medium-complexity mock community
+
+sim_metagenome.fa.gz
+-Simulated metagenome containing 100 bp error-free reads
+-Coverage of each genome in metagenome is proportional to that genome's relative abundance
+-Summed coverage across all 20 genomes is 2x

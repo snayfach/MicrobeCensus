@@ -164,7 +164,7 @@ print ("Keep temporary files: %s" % keep_tmp)
 
 print ("\n====Estimating Average Genome Size====")
 # 1. Downsample nreads of read_length from seqfile;
-#       -optionally detect FASTQ format, remove duplicates, and perform quality filtering
+#       -optionally remove duplicates and perform quality filtering
 if file_type == 'fastq':
     p_sampled_reads, read_ids = process_fastq(p_reads, p_wkdir, nreads, read_length, mean_quality, min_quality, filter_dups, max_unknown, fastq_format, keep_tmp)
 elif file_type == 'fasta':

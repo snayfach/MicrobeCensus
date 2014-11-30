@@ -93,8 +93,9 @@ def auto_detect_file_type(p_reads):
     ext = p_reads.split('.')[-1]
     f_in = gzip.open(p_reads) if ext == 'gz' else bz2.BZ2File(p_reads) if ext == 'bz2' else open(p_reads) 
     for line in f_in:
-        if line[0] == '>': return 'fasta'
-        else: return 'fastq'
+		if line[0] == '>': return 'fasta'
+		elif line[0] == '@': return 'fastq'
+		else: sys.exit('Filetype of %s could not be recognized' % p_reads)
 
 def auto_detect_fastq_format(p_reads):
 	""" Detect quality score encoding of <p_reads> file (sanger, solexa, or illumina)
@@ -102,7 +103,7 @@ def auto_detect_fastq_format(p_reads):
 	"""
 	max_depth = 1000000
 	# format specific characters
-	sanger   = set(list("""!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ"""))
+	sanger   = set(list("""!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHI"""))
 	solexa   = set(list(""";<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
 	illumina = set(list("""@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
 	formats  = {'sanger': sanger, 'solexa': solexa, 'illumina': illumina}
@@ -127,9 +128,10 @@ def auto_detect_fastq_format(p_reads):
 		i = 0; j += 1
 		if j == max_depth:
 			break
-	# guess at format if not detected
-	guess = random.sample(formats.keys(), 1)[0]
-	return guess
+	# guess format if it cannot be definitively determined
+	if 'illumina' in formats.keys(): return 'illumina'
+	elif 'solexa' in formats.keys(): return 'solexa'
+	else: return 'sanger'
 
 def process_fasta(p_reads, p_wkdir, nreads, read_length, filter_dups, max_unknown, keep_tmp):
     """ Sample <nreads> of <read_length> from <p_reads>

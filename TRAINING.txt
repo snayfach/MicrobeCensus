@@ -3,11 +3,6 @@ Train MicrobeCensus using set of user-defined genomes and marker genes
 This workflow will generate all the files needed to run MicrobeCensus using your marker genes
 Software designed to run in parallel on a multi-core unix server
 
-REQUIRED PYTHON LIBRARIES
-BioPython
-numpy
-multiprocessing
-
 INPUT DATA
 Test input data has been provided in order to test all scripts in workflow. These files should be replaced
 with the genomes and gene families you wish to train on:

@@ -1,0 +1,148 @@
+# MicrobeCensus
+MicrobeCensus is a fast and easy to use pipeline for estimating the average genome size (AGS) of a microbial 
+community from metagenomic data. 
+
+In short, AGS is estimated by aligning reads to a set of universal single-copy gene families present in nearly all cellular microbes (Bacteria, Archaea, Fungi). 
+Because these genes occur once per genome, the average genome size of a microbial community is inversely proportional to the fraction of reads which hit these genes.
+
+### Requirements
+* Python dependencies (installed via setup.py): Numpy, BioPython
+* Supported platforms: Mac OSX, Unix/Linux; Windows not currently supported
+* Python version 2 or 3
+
+### Installation
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.2.1.tar.gz   
+
+Unpack the project: 
+`tar -zxvf MicrobeCensus-1.2.1.tar.gz`
+
+Navigate to the installation directory:  
+`cd /path/to/MicrobeCensus`  
+
+Run setup.py. This will install any dependencies:  
+`python setup.py install` or  
+`sudo python setup.py install` to install as a superuser
+
+Alternatively, MicrobeCensus can be installed directly from PyPI:  
+`pip install MicrobeCensus` or   
+`sudo pip install MicrobeCensus` to install as a superuser
+
+### Using MicrobeCensus without installing
+Although this is not recommended, users may with to run MicrobeCensus without running setup.py.  
+
+Both BioPython and Numpy will both need to be already installed.
+You should be able to enter the following command in the python interpreter without getting an error:  
+`>>> import biopython`  
+`>>> import numpy`
+
+Next, add the microbe_census module to your PYTHONPATH environmental variable:  
+`export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus/microbe_census` or  
+`echo 'export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus/microbe_census >> ~/.bash_profile'` to avoid entering the command in the future
+
+Finally, add the script directory to your PATH environmental variable:  
+`export PATH=$PATH:/path/to/MicrobeCensus/scripts`  
+`echo 'export PATH=$PATH:/path/to/MicrobeCensus/scripts'` to avoid entering the command in the future
+
+Now, you should be able to enter the command into your terminal without getting an error:  
+`run_microbe_census.py -h`
+
+### Testing the software
+After installing MicrobeCensus, we recommend testing the software:  
+`cd /path/to/MicrobeCensus/test`  
+`python test_microbe_census.py`
+
+### Running MicrobeCensus
+MicrobeCensus can either be run as a command-line script or imported to python as a module
+
+#### Command-line usage
+`run_microbe_census [-options] seqfile`
+
+arguments:  
+  seqfile               path to input metagenome  
+  outfile               path to output file  
+
+options:  
+  -h, --help            show this help message and exit  
+  -n NREADS             number of reads to use for AGS estimation (default = 1e6)  
+  -l {50,60,70,80,90,100,110,120,130,140,150,175,200,225,250,300,350,400,450,500}  
+                        trim reads to this length (default = median read length)  
+  -f {fasta,fastq}      file type (default = autodetect)  
+  -c {fastq-sanger,fastq-solexa,fastq-illumina}  
+                        quality score encoding (default = autodetect)  
+  -t THREADS            number of threads to use for database search (default = 1)  
+  -q MIN_QUALITY        minimum base-level PHRED quality score (default = -5; no filtering)  
+  -m MEAN_QUALITY       minimum read-level PHRED quality score (default = -5; no filtering)  
+  -d                    filter duplicate reads (default = False)  
+  -u MAX_UNKNOWN        max percent of unknown bases (default = 100 percent; no filtering)  
+  -k                    keep temporary files (default = False)  
+  -s                    suppress printing program's progress to stdout (default = False)
+
+### Recommended options
+* Use -n to limit the number of reads searched. Suggested values are between 500,000 and 1 million. Using more reads may result in slightly more accurate estimates of AGS, but will take more time to run.
+* Remove potential sources of contamination from your metagenome. This may indlude: adaptor sequences, host DNA, or viral DNA.  
+* Generally it is better to use more reads rather than longer reads.
+* Filter very low quality reads using -m 5 and -u 5.
+
+### Software speed
+* Run times are for a 150 bp library. Expect longer/shorter runtimes depending on read length.
+
+Threads (-t)  | Reads/Second
+------------- | -------------
+1  | 830
+2  | 1,300
+4  | 1,800
+8  | 2,000
+
+### Examples
+Input files: 
+- MicrobeCensus/example/example.fq.gz contains 10,000 sequences in FASTQ format. Read lengths vary betweeb 60-100 bp. 
+  Sequences are metagenomic reads from a stool sample.
+- MicrobeCensus/example/example.fa.gz contains 10,000 500 bp sequences in FASTA format. 
+  Sequences are simulated shotgun reads from the bacterial genome Treponema pallidum.
+* These are toy datasets. In practice, between 300,000 to 500,000 reads are needed 
+  for accurate estimates of average genome size for most metagenomes
+
+Examples:
+- Run with default options using either FASTA or FASTQ input files:
+  microbe_census.py example.fq.gz fastq_example.out
+  microbe_census.py example.fa.gz fasta_example.out
+- Run with recommended quality filtering options:
+  microbe_census.py -d -u 0 -m 5 example.fq.gz fastq_example.out
+- Run with manually specified number of reads and read length:
+  microbe_census.py -n 1000 -l 500 example.fa.gz fasta_example.out
+
+
+
+### Normalization
+We recommending using the statistic RPKG (reads per kb per genome equivalent) to quantify gene-family abundance from 
+shotgun metagenomes.This is similar to the commonly used statistic RPKM, but instead of dividing by the number of mapped reads, we divide by the number of genome equivalents:
+
+>RPKG = (reads mapped to gene)/(gene length in kb)/(genome equivalents), where  
+>genomes equivalent = (total DNA sequenced in bp)/(average genome size in bp), and  
+>total DNA sequenced in bp = (read length in bp) * (reads sequenced)
+
+Use case: 
+We have two metagenomic libraries, L1 and L2, which each contain 1 million 100-bp reads:
+>READ_LENGTH_L1 = 100 bp  
+>READS_SEQUENCED_L1 = 1,000,000   
+>TOTAL_DNA_L1 = 100,000,000 bp  
+>READ_LENGTH_L2 = 100 bp  
+>READS_SEQUENCED_L2 = 1,000,000   
+>TOTAL_DNA_L2 = 100,000,000 bp  
+
+We use MicrobeCensus to estimate the average genome size of each library: 
+>AGS_L1 = 2,500,000 bp  
+>AGS_L2 = 5,000,000 bp
+
+Next, we map reads from each library to a reference database which contains a gene of interest G. G is 1000 bp long. 
+We get 100 reads mapped to gene G from each library:
+>LENGTH_G = 1,000 bp  
+>MAPPED_READS_G_L1 = 100  
+>MAPPED_READS_G_L2 = 100
+
+Finally, we quantify RPKG for gene G in each library:
+>RPKG for G in L1 = (100 mapped reads)/(1 kb)/(100,000,000 bp sequenced / 2,500,000 bp AGS) = 2.5  
+>RPKG for G in L2 = (100 mapped reads)/(1 kb)/(100,000,000 bp sequenced / 5,000,000 bp AGS) = 5.0  
+
+
+

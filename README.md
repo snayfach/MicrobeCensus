@@ -39,8 +39,8 @@ Next, add the microbe_census module to your PYTHONPATH environmental variable:
 `export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus/microbe_census` or  
 `echo 'export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus/microbe_census >> ~/.bash_profile'` to avoid entering the command in the future
 
-Finally, add the script directory to your PATH environmental variable:  
-`export PATH=$PATH:/path/to/MicrobeCensus/scripts`  
+Finally, add the scripts directory to your PATH environmental variable:  
+`export PATH=$PATH:/path/to/MicrobeCensus/scripts` or  
 `echo 'export PATH=$PATH:/path/to/MicrobeCensus/scripts'` to avoid entering the command in the future
 
 Now, you should be able to enter the command into your terminal without getting an error:  
@@ -57,11 +57,11 @@ MicrobeCensus can either be run as a command-line script or imported to python a
 #### Command-line usage
 **run_microbe_census.py [-options] seqfile outfile**
 
-##### arguments:
+arguments:
 * **seqfile**: path to input metagenome (gzip and bzip compresseion supported)
 * **outfile**:: path to output file
 
-##### options: 
+options: 
 * **-h, --help**: show this help message and exit 
 * **-n NREADS**: number of reads to use for AGS estimation (default = 1e6)  
 * **-l READ_LENGTH**: trim reads from 3' to this length (default = median read length of seqfile)  
@@ -75,20 +75,36 @@ MicrobeCensus can either be run as a command-line script or imported to python a
 * **-k**: keep temporary files (default = False)  
 * **-s**: suppress printing program's progress to stdout (default = False)
 
-#### Importing as python module
+#### Module usage
 
-First, import the module:
+First, import the module:  
 `>>> from microbe_census import microbe_census`
 
-Next, setup your options and arguments, formatted as a dictionary. The path to your seqfile is the only requirement:
-`>>> args = {'seqfile':'/path/to/input/metagenome'}`
+Next, setup your options and arguments, formatted as a dictionary. The path to your metagenome is the only requirement (default values will be used for all other options):
+`>>> args = {'seqfile':'MicrobeCensus/microbe_census/example/example.fq.gz'}`
 
-Finally, the entire pipeline can be run from your script:
+Alternatively, other options can be specified:
+```
+>>> args = {
+  'seqfile':'MicrobeCensus/microbe_census/example/example.fq.gz',
+  'nreads':100000,
+  'read_length':100,
+  'file_type':'fastq',
+  'quality_type':'fastq-sanger',
+  'threads':1,
+  'min_quality':10,
+  'mean_quality':10,
+  'filter_dups':False,
+  'max_unknown':0,
+  'quiet':False}
+```
+
+Finally, the entire pipeline can be run by passing your arguments to the run_pipeline function:
 `average_genome_size, options = microbe_census.run_pipeline(args)`
 
-### Recommended options
+#### Recommended options
 * Use -n to limit the number of reads searched. Suggested values are between 500,000 and 1 million. Using more reads may result in slightly more accurate estimates of AGS, but will take more time to run.
-* Remove potential sources of contamination from your metagenome. This may indlude: adaptor sequences, host DNA, or viral DNA.  
+* Remove potential sources of contamination from your metagenome. This may include: adaptor sequences, host DNA, or viral DNA.  
 * Generally it is better to use more reads rather than longer reads.
 * Filter very low quality reads using -m 5 and -u 5.
 
@@ -119,8 +135,6 @@ Examples:
   microbe_census.py -d -u 0 -m 5 example.fq.gz fastq_example.out
 - Run with manually specified number of reads and read length:
   microbe_census.py -n 1000 -l 500 example.fa.gz fasta_example.out
-
-
 
 ### Normalization
 We recommending using the statistic RPKG (reads per kb per genome equivalent) to quantify gene-family abundance from 

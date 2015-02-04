@@ -118,21 +118,6 @@ Threads (-t)  | Reads/Second
 4  | 1,800
 8  | 2,000
 
-### Examples
-Input files: 
-- MicrobeCensus/microbe_census/example/example.fq.gz contains 10,000 sequences in FASTQ format. Read lengths vary between 60-100 bp. Sequences are metagenomic reads from a stool sample.
-- MicrobeCensus/microbe_census/example/example.fa.gz contains 10,000 500 bp sequences in FASTA format. 
-  Sequences are simulated shotgun reads from the bacterial genome Treponema pallidum.
-- These are toy datasets. In practice, between 300,000 to 500,000 reads are needed for accurate estimates of average genome size for most metagenomes
-
-Examples:
-- Run with default options using either FASTA or FASTQ input files:  
-  `run_microbe_census.py example.fq.gz fastq_example.out`  
-  `run_microbe_census.py example.fa.gz fasta_example.out`  
-- Run with quality filtering options:  
-  `run_microbe_census.py -u 5 -m 5 example.fq.gz fastq_example.out`  
-- Run with manually specified number of reads and read length:  
-  `run_microbe_census.py -n 1000 -l 500 example.fa.gz fasta_example.out`
 
 ### Normalization
 AGS estimated from MicrobeCensus can be used to normalize functional abundance profiles. We recommending using the statistic RPKG (reads per kb per genome equivalent) to quantify gene-family abundance from shotgun metagenomes. This is similar to the commonly used statistic RPKM, but instead of dividing by the number of total mapped reads, we divide by the number of genome equivalents:
@@ -163,6 +148,9 @@ We get 100 reads mapped to gene G from each library:
 Finally, we quantify RPKG for gene G in each library:
 >RPKG for G in L1 = (100 mapped reads)/(1 kb)/(100,000,000 bp sequenced / 2,500,000 bp AGS) = 2.5  
 >RPKG for G in L2 = (100 mapped reads)/(1 kb)/(100,000,000 bp sequenced / 5,000,000 bp AGS) = 5.0  
+
+### Training
+We have included scripts and documentation for retraining MicrobeCensus, using user-supplied training genomes and gene families. Documentation and scripts can be found under: MicrobeCensus/training
 
 ### Citing
 If you use MicrobeCensus, please cite:  

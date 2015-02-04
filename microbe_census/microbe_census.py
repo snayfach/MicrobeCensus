@@ -22,9 +22,6 @@ except: sys.exit("Could not import module 'platform'")
 try: import gzip
 except: sys.exit("Could not import module 'gzip'")
 
-try: import random
-except: sys.exit("Could not import module 'random'")
-
 try: import subprocess
 except: sys.exit("Could not import module 'subprocess'")
 
@@ -42,6 +39,9 @@ except: sys.exit("Could not import module 'tempfile.mkstemp'")
 
 try: import io
 except: sys.exit("Could not import module 'io'")
+
+try: import pkg_resources
+except: sys.exit("Could not import module 'pkg_resources'")
 
 #######################################################################################
 #   FUNCTIONS
@@ -111,17 +111,14 @@ def check_os():
 def get_relative_paths():
 	""" Fetch relative paths to data files """
 	paths = {}
-	paths['main'] = os.path.dirname(os.path.realpath(__file__))
-	paths['bin'] = os.path.join(paths['main'],'bin')
-	paths['data'] = os.path.join(paths['main'],'data')
-	paths['rapsearch'] = os.path.join(paths['bin'], '_'.join(['rapsearch',platform.system(),'2.15']))
-	paths['db'] = os.path.join(paths['data'], 'rapdb_2.15')
-	paths['fams'] = os.path.join(paths['data'], 'gene_fam.map')
-	paths['genelen'] = os.path.join(paths['data'], 'gene_len.map')
-	paths['params'] = os.path.join(paths['data'], 'pars.map')
-	paths['coeffs'] = os.path.join(paths['data'], 'coefficients.map')
-	paths['weights'] = os.path.join(paths['data'], 'weights.map')
-	paths['readlen'] = os.path.join(paths['data'], 'read_len.map')
+	paths['rapsearch'] = pkg_resources.resource_filename('microbe_census', 'bin/%s' % '_'.join(['rapsearch',platform.system(),'2.15']))
+	paths['db'] = pkg_resources.resource_filename('microbe_census', 'data/rapdb_2.15')
+	paths['fams'] = pkg_resources.resource_filename('microbe_census', 'data/gene_fam.map')
+	paths['genelen'] = pkg_resources.resource_filename('microbe_census', 'data/gene_len.map')
+	paths['params'] = pkg_resources.resource_filename('microbe_census', 'data/pars.map')
+	paths['coeffs'] = pkg_resources.resource_filename('microbe_census', 'data/coefficients.map')
+	paths['weights'] = pkg_resources.resource_filename('microbe_census', 'data/weights.map')
+	paths['readlen'] = pkg_resources.resource_filename('microbe_census', 'data/read_len.map')
 	paths['tempfile'] = mkstemp()[1]
 	return paths
 	

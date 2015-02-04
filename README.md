@@ -28,7 +28,7 @@ Alternatively, MicrobeCensus can be installed directly from PyPI:
 `sudo pip install MicrobeCensus` to install as a superuser
 
 ### Using MicrobeCensus without installing
-Although this is not recommended, users may with to run MicrobeCensus without running setup.py.  
+Although this is not recommended, users may wish to run MicrobeCensus without running setup.py.  
 
 Both BioPython and Numpy will both need to be already installed.
 You should be able to enter the following command in the python interpreter without getting an error:  
@@ -58,8 +58,8 @@ MicrobeCensus can either be run as a command-line script or imported to python a
 **run_microbe_census.py [-options] seqfile outfile**
 
 arguments:
-* **seqfile**: path to input metagenome (gzip and bzip compresseion supported)
-* **outfile**:: path to output file
+* **seqfile**: path to input metagenome. can be FASTA/FASTQ formatted. gzip (.gz) and bzip2 (.bz2) compression supported.
+* **outfile**: path to output file
 
 options: 
 * **-h, --help**: show this help message and exit 
@@ -99,8 +99,8 @@ Alternatively, other options can be specified:
   'quiet':False}
 ```
 
-Finally, the entire pipeline can be run by passing your arguments to the run_pipeline function:
-`average_genome_size, options = microbe_census.run_pipeline(args)`
+Finally, the entire pipeline can be run by passing your arguments to the run_pipeline function. MicrobeCensus returns the estimated AGS of your metagenome, along with a dictionary of used arguments:
+`average_genome_size, args = microbe_census.run_pipeline(args)`
 
 #### Recommended options
 * Use -n to limit the number of reads searched. Suggested values are between 500,000 and 1 million. Using more reads may result in slightly more accurate estimates of AGS, but will take more time to run.
@@ -120,25 +120,22 @@ Threads (-t)  | Reads/Second
 
 ### Examples
 Input files: 
-- MicrobeCensus/example/example.fq.gz contains 10,000 sequences in FASTQ format. Read lengths vary betweeb 60-100 bp. 
-  Sequences are metagenomic reads from a stool sample.
-- MicrobeCensus/example/example.fa.gz contains 10,000 500 bp sequences in FASTA format. 
+- MicrobeCensus/microbe_census/example/example.fq.gz contains 10,000 sequences in FASTQ format. Read lengths vary between 60-100 bp. Sequences are metagenomic reads from a stool sample.
+- MicrobeCensus/microbe_census/example/example.fa.gz contains 10,000 500 bp sequences in FASTA format. 
   Sequences are simulated shotgun reads from the bacterial genome Treponema pallidum.
-* These are toy datasets. In practice, between 300,000 to 500,000 reads are needed 
-  for accurate estimates of average genome size for most metagenomes
+- These are toy datasets. In practice, between 300,000 to 500,000 reads are needed for accurate estimates of average genome size for most metagenomes
 
 Examples:
-- Run with default options using either FASTA or FASTQ input files:
-  microbe_census.py example.fq.gz fastq_example.out
-  microbe_census.py example.fa.gz fasta_example.out
-- Run with recommended quality filtering options:
-  microbe_census.py -d -u 0 -m 5 example.fq.gz fastq_example.out
-- Run with manually specified number of reads and read length:
-  microbe_census.py -n 1000 -l 500 example.fa.gz fasta_example.out
+- Run with default options using either FASTA or FASTQ input files:  
+  `run_microbe_census.py example.fq.gz fastq_example.out`  
+  `run_microbe_census.py example.fa.gz fasta_example.out`  
+- Run with quality filtering options:  
+  `run_microbe_census.py -u 5 -m 5 example.fq.gz fastq_example.out`  
+- Run with manually specified number of reads and read length:  
+  `run_microbe_census.py -n 1000 -l 500 example.fa.gz fasta_example.out`
 
 ### Normalization
-We recommending using the statistic RPKG (reads per kb per genome equivalent) to quantify gene-family abundance from 
-shotgun metagenomes.This is similar to the commonly used statistic RPKM, but instead of dividing by the number of mapped reads, we divide by the number of genome equivalents:
+AGS estimated from MicrobeCensus can be used to normalize functional abundance profiles. We recommending using the statistic RPKG (reads per kb per genome equivalent) to quantify gene-family abundance from shotgun metagenomes. This is similar to the commonly used statistic RPKM, but instead of dividing by the number of total mapped reads, we divide by the number of genome equivalents:
 
 >RPKG = (reads mapped to gene)/(gene length in kb)/(genome equivalents), where  
 >genomes equivalent = (total DNA sequenced in bp)/(average genome size in bp), and  
@@ -167,5 +164,8 @@ Finally, we quantify RPKG for gene G in each library:
 >RPKG for G in L1 = (100 mapped reads)/(1 kb)/(100,000,000 bp sequenced / 2,500,000 bp AGS) = 2.5  
 >RPKG for G in L2 = (100 mapped reads)/(1 kb)/(100,000,000 bp sequenced / 5,000,000 bp AGS) = 5.0  
 
+### Citing
+If you use MicrobeCensus, please cite:  
 
+Average genome size estimation improves comparative metagenomics and sheds light on the functional ecology of the human microbiome. **Stephen Nayfach and Katherine Pollard**. _Genome Biology_.
 

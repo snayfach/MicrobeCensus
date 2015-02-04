@@ -52,30 +52,39 @@ After installing MicrobeCensus, we recommend testing the software:
 `python test_microbe_census.py`
 
 ### Running MicrobeCensus
-MicrobeCensus can either be run as a command-line script or imported to python as a module
+MicrobeCensus can either be run as a command-line script or imported to python as a module.
 
 #### Command-line usage
-`run_microbe_census [-options] seqfile`
+**run_microbe_census.py [-options] seqfile outfile**
 
-arguments:  
-  seqfile               path to input metagenome  
-  outfile               path to output file  
+##### arguments:
+* **seqfile**: path to input metagenome (gzip and bzip compresseion supported)
+* **outfile**:: path to output file
 
-options:  
-  -h, --help            show this help message and exit  
-  -n NREADS             number of reads to use for AGS estimation (default = 1e6)  
-  -l {50,60,70,80,90,100,110,120,130,140,150,175,200,225,250,300,350,400,450,500}  
-                        trim reads to this length (default = median read length)  
-  -f {fasta,fastq}      file type (default = autodetect)  
-  -c {fastq-sanger,fastq-solexa,fastq-illumina}  
-                        quality score encoding (default = autodetect)  
-  -t THREADS            number of threads to use for database search (default = 1)  
-  -q MIN_QUALITY        minimum base-level PHRED quality score (default = -5; no filtering)  
-  -m MEAN_QUALITY       minimum read-level PHRED quality score (default = -5; no filtering)  
-  -d                    filter duplicate reads (default = False)  
-  -u MAX_UNKNOWN        max percent of unknown bases (default = 100 percent; no filtering)  
-  -k                    keep temporary files (default = False)  
-  -s                    suppress printing program's progress to stdout (default = False)
+##### options: 
+* **-h, --help**: show this help message and exit 
+* **-n NREADS**: number of reads to use for AGS estimation (default = 1e6)  
+* **-l READ_LENGTH**: trim reads from 3' to this length (default = median read length of seqfile)  
+* **-f FILE_TYPE {fasta,fastq}**: FASTA or FASTQ formatted seqfile (default = autodetect)
+* **-c QUAL_ENCODE {fastq-sanger,fastq-solexa,fastq-illumina}**: Quality encoding for FASTQ files (default = autodetect)
+* **-t THREADS**: number of threads to use for database search (default = 1)  
+* **-q MIN_QUALITY**: minimum base-level PHRED quality score (default = -5)  
+* **-m MEAN_QUALITY**: minimum read-level PHRED quality score (default = -5)  
+* **-d**: filter duplicate reads (default = False)  
+* **-u MAX_UNKNOWN**: max percent of unknown bases (default = 100)  
+* **-k**: keep temporary files (default = False)  
+* **-s**: suppress printing program's progress to stdout (default = False)
+
+#### Importing as python module
+
+First, import the module:
+`>>> from microbe_census import microbe_census`
+
+Next, setup your options and arguments, formatted as a dictionary. The path to your seqfile is the only requirement:
+`>>> args = {'seqfile':'/path/to/input/metagenome'}`
+
+Finally, the entire pipeline can be run from your script:
+`average_genome_size, options = microbe_census.run_pipeline(args)`
 
 ### Recommended options
 * Use -n to limit the number of reads searched. Suggested values are between 500,000 and 1 million. Using more reads may result in slightly more accurate estimates of AGS, but will take more time to run.

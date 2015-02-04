@@ -4,6 +4,7 @@ except: from distutils.core import setup
 setup(
 	name = 'MicrobeCensus',
 	version = '1.3.0',
+	description = 'Estimation of average genome size from shotgun sequence data',
 	packages = ['microbe_census', 'training', 'tests'],
 	package_data={
 		'microbe_census': ['data/*', 'bin/*', 'example/*'],

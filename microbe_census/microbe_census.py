@@ -227,7 +227,10 @@ def impute_missing_args(args):
 	if 'read_length' not in args or args['read_length'] is None:
 		args['read_length'] = auto_detect_read_length(args['seqfile'], args['file_type'])
 
-	if 'fastq_format' not in args or (args['fastq_format'] is None and args['file_type'] == 'fastq'):
+	if 'fastq_format' not in args:
+		args['fastq_format'] = None
+
+	if args['file_type'] == 'fastq' and args['fastq_format'] is None:
 		args['fastq_format'] = auto_detect_fastq_format(args['seqfile'])
 		args['quality_type'] = 'solexa_quality' if args['fastq_format'] == 'fastq-solexa' else 'phred_quality'
 

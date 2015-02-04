@@ -80,7 +80,7 @@ options:
 First, import the module:  
 `>>> from microbe_census import microbe_census`
 
-Next, setup your options and arguments, formatted as a dictionary. The path to your metagenome is the only requirement (default values will be used for all other options):
+Next, setup your options and arguments, formatted as a dictionary. The path to your metagenome is the only requirement (default values will be used for all other options):  
 `>>> args = {'seqfile':'MicrobeCensus/microbe_census/example/example.fq.gz'}`
 
 Alternatively, other options can be specified:

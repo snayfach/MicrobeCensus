@@ -32,12 +32,12 @@ Although this is not recommended, users may with to run MicrobeCensus without ru
 
 Both BioPython and Numpy will both need to be already installed.
 You should be able to enter the following command in the python interpreter without getting an error:  
-`>>> import biopython`  
+`>>> import Bio.SeqIO`  
 `>>> import numpy`
 
-Next, add the microbe_census module to your PYTHONPATH environmental variable:  
-`export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus/microbe_census` or  
-`echo 'export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus/microbe_census >> ~/.bash_profile'` to avoid entering the command in the future
+Next, add the MicrobeCensus module to your PYTHONPATH environmental variable:  
+`export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus` or  
+`echo 'export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus >> ~/.bash_profile'` to avoid entering the command in the future
 
 Finally, add the scripts directory to your PATH environmental variable:  
 `export PATH=$PATH:/path/to/MicrobeCensus/scripts` or  

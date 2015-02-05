@@ -155,5 +155,5 @@ We have included scripts and documentation for retraining MicrobeCensus, using u
 ### Citing
 If you use MicrobeCensus, please cite:  
 
-Average genome size estimation improves comparative metagenomics and sheds light on the functional ecology of the human microbiome. **Stephen Nayfach and Katherine Pollard**. _Genome Biology_.
+Average genome size estimation improves comparative metagenomics and sheds light on the functional ecology of the human microbiome. **Stephen Nayfach and Katherine Pollard**. _Genome Biology (in review)_.
 

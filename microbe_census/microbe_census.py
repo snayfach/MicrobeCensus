@@ -54,12 +54,12 @@ def open_file(inpath):
 	""" Open input file for reading regardless of compression [gzip, bzip] or python version """
 	ext = inpath.split('.')[-1]
 	# Python2
-	if sys.version_info.major == 2:
+	if sys.version_info[0] == 2:
 		if ext == 'gz': return gzip.open(inpath)
 		elif ext == 'bz2': return bz2.BZ2File(inpath)
 		else: return open(inpath)
 	# Python3
-	elif sys.version_info.major == 3:
+	elif sys.version_info[0] == 3:
 		if ext == 'gz': return io.TextIOWrapper(gzip.open(inpath))
 		elif ext == 'bz2': return bz2.BZ2File(inpath)
 		else: return open(inpath)
@@ -155,39 +155,17 @@ def auto_detect_file_type(seqfile):
 		else: sys.exit("Filetype [fasta, fastq] of %s could not be recognized" % seqfile)
 
 def auto_detect_fastq_format(seqfile):
-	""" Detect quality score encoding of seqfile (sanger, solexa, or illumina)
-		For details: http://en.wikipedia.org/wiki/FASTQ_format
-	"""
-	max_depth = 1000000
-	formats= {
-	          'fastq-sanger': set(list("""!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHI""")),
-			  'fastq-solexa': set(list(""";<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh""")),
-			  'fastq-illumina': set(list("""@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh"""))
-			  }
-	# loop over quality scores
-	i = 0; j = 0
-	for line in open_file(seqfile):
-		i += 1
-		if i != 4: continue
-		for q in line.rstrip():
-			# look for incompatible formats
-			del_formats = []
-			for format in formats.keys():
-				if q not in formats[format]:
-					del_formats.append(format)
-			for format in del_formats:
-				del formats[format]
-			if len(formats) == 1:
-				return list(formats)[0]
-			elif len(formats) == 0:
-				sys.exit("\tUnrecognized character in quality string: %s" % line.rstrip())
-		i = 0; j += 1
-		if j == max_depth:
-			break
-	# guess format if it cannot be definitively determined
-	if 'fastq-illumina' in list(formats): return 'fastq-illumina'
-	elif 'fastq-solexa' in list(formats): return 'fastq-solexa'
-	else: return 'fastq-sanger'
+	""" Use first 50,000 reads to detect quality encoding """
+	max_reads = 50000
+	formats = ['fastq-illumina', 'fastq-solexa', 'fastq-sanger']
+	for format in formats:
+		try:
+			for index, rec in enumerate(parse(open_file(seqfile), format)):
+				if index == max_reads: break
+			return format
+		except:
+			pass
+	sys.exit("Could not determine FASTQ quality encoding")
 
 def impute_missing_args(args):
 	""" Fill in missing arguments with defaults """
@@ -229,6 +207,8 @@ def impute_missing_args(args):
 
 	if args['file_type'] == 'fastq' and args['fastq_format'] is None:
 		args['fastq_format'] = auto_detect_fastq_format(args['seqfile'])
+		
+	if args['file_type'] == 'fastq':
 		args['quality_type'] = 'solexa_quality' if args['fastq_format'] == 'fastq-solexa' else 'phred_quality'
 
 def check_arguments(args):
@@ -242,14 +222,16 @@ def check_arguments(args):
 	if args['nreads'] is not None and args['nreads'] < 1:
 		sys.exit("Invalid number of reads: %s\nMust be a positive integer." % args['nreads'])
 
-def print_program_info(args):
+def print_copyright():
 	# print out copyright information
 	print ("\nMicrobeCensus - estimation of average genome size from shotgun sequence data")
 	print ("version %s; github.com/snayfach/MicrobeCensus" % __version__)
 	print ("Copyright (C) 2013-2014 Stephen Nayfach")
-	print ("Freely distributed under the GNU General Public License (GPLv3)")
+	print ("Freely distributed under the GNU General Public License (GPLv3)\n")
+
+def print_parameters(args):
 	# print out parameters
-	print ("\n=============Parameters==============")
+	print ("=============Parameters==============")
 	print ("Input metagenome: %s" % args['seqfile'])
 	print ("Output file: %s" % args['outfile'])
 	print ("Reads trimmed to: %s bp" % args['read_length'])
@@ -261,7 +243,7 @@ def print_program_info(args):
 	print ("Minimum read-level quality score: %s" % (args['mean_quality'] if args['file_type'] == 'fastq' else 'NA'))
 	print ("Maximum percent unknown bases/read: %s" % args['max_unknown'])
 	print ("Filter duplicate reads: %s" % args['filter_dups'])
-	print ("Keep temporary files: %s" % args['keep_tmp'])
+	print ("Keep temporary files: %s\n" % args['keep_tmp'])
 
 def quality_filter(rec, args):
 	""" Return true if read fails QC """
@@ -284,7 +266,7 @@ def quality_filter(rec, args):
 def process_seqfile(args, paths):
 	""" Sample high quality reads from seqfile """
 	if not args['quiet']:
-		print ("\n====Estimating Average Genome Size====")
+		print ("====Estimating Average Genome Size====")
 		print ("Sampling & trimming reads...")
 	outfile = open(paths['tempfile'], 'w')
 	# loop over sequences
@@ -481,6 +463,9 @@ def clean_up(paths):
 
 def run_pipeline(args):
 
+	# Print copyright
+	if not args['quiet']: print_copyright()
+	
 	# Make sure OS is Linux or Darwin
 	check_os()
 
@@ -491,7 +476,7 @@ def run_pipeline(args):
 	# Impute any missing arguments/options, sanity check, print to stdout
 	impute_missing_args(args)
 	check_arguments(args)
-	if not args['quiet']: print_program_info(args)
+	if not args['quiet']: print_parameters(args)
 	
 	# Sample and QC reads from seqfile
 	process_seqfile(args, paths)

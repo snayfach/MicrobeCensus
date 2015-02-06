@@ -11,10 +11,10 @@ Because these genes occur once per genome, the average genome size of a microbia
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.1.tar.gz  
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.2.tar.gz  
 
 Unpack the project: 
-`tar -zxvf MicrobeCensus-1.0.1.tar.gz`
+`tar -zxvf MicrobeCensus-1.0.2.tar.gz`
 
 Navigate to the installation directory:  
 `cd /path/to/MicrobeCensus`  

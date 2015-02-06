@@ -2,7 +2,7 @@
 # Copyright (C) 2013-2014 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 #######################################################################################
 #   IMPORT LIBRARIES

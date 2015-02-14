@@ -11,10 +11,10 @@ Because these genes occur once per genome, the average genome size of a microbia
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.2.tar.gz  
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.3.tar.gz  
 
 Unpack the project: 
-`tar -zxvf MicrobeCensus-1.0.2.tar.gz`
+`tar -zxvf MicrobeCensus-1.0.3.tar.gz`
 
 Navigate to the installation directory:  
 `cd /path/to/MicrobeCensus`  
@@ -36,12 +36,12 @@ You should be able to enter the following command in the python interpreter with
 `>>> import numpy`
 
 Next, add the MicrobeCensus module to your PYTHONPATH environmental variable:  
-`export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus` and  
-`echo export PYTHONPATH='$PYTHONPATH':/path/to/MicrobeCensus >> ~/.bash_profile` to avoid entering the command in the future
+`export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus` or  
+`echo 'export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus >> ~/.bash_profile'` to avoid entering the command in the future
 
 Finally, add the scripts directory to your PATH environmental variable:  
-`export PATH=$PATH:/path/to/MicrobeCensus/scripts` and  
-`echo export PATH='$PATH':/path/to/MicrobeCensus/scripts >> ~/.bash_profile` to avoid entering the command in the future
+`export PATH=$PATH:/path/to/MicrobeCensus/scripts` or  
+`echo 'export PATH=$PATH:/path/to/MicrobeCensus/scripts'` to avoid entering the command in the future
 
 Now, you should be able to enter the command into your terminal without getting an error:  
 `run_microbe_census.py -h`
@@ -72,8 +72,7 @@ options:
 * **-m MEAN_QUALITY**: minimum read-level PHRED quality score (default = -5)  
 * **-d**: filter duplicate reads (default = False)  
 * **-u MAX_UNKNOWN**: max percent of unknown bases (default = 100)  
-* **-k**: keep temporary files (default = False)  
-* **-s**: suppress printing program's progress to stdout (default = False)
+* **-v**: print program's progress to stdout (default = False)
 
 #### Module usage
 
@@ -96,7 +95,7 @@ Alternatively, other options can be specified:
   'mean_quality':10,
   'filter_dups':False,
   'max_unknown':0,
-  'quiet':False}
+  'verbose':True}
 ```
 
 Finally, the entire pipeline can be run by passing your arguments to the run_pipeline function. MicrobeCensus returns the estimated AGS of your metagenome, along with a dictionary of used arguments:

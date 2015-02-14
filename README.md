@@ -36,12 +36,12 @@ You should be able to enter the following command in the python interpreter with
 `>>> import numpy`
 
 Next, add the MicrobeCensus module to your PYTHONPATH environmental variable:  
-`export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus` or  
-`echo 'export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus >> ~/.bash_profile'` to avoid entering the command in the future
+`export PYTHONPATH=$PYTHONPATH:/path/to/MicrobeCensus` and  
+`echo export PYTHONPATH='$PYTHONPATH':/path/to/MicrobeCensus >> ~/.bash_profile` to avoid entering the command in the future
 
 Finally, add the scripts directory to your PATH environmental variable:  
-`export PATH=$PATH:/path/to/MicrobeCensus/scripts` or  
-`echo 'export PATH=$PATH:/path/to/MicrobeCensus/scripts'` to avoid entering the command in the future
+`export PATH=$PATH:/path/to/MicrobeCensus/scripts` and  
+`echo export PATH='$PATH':/path/to/MicrobeCensus/scripts >> ~/.bash_profile` to avoid entering the command in the future
 
 Now, you should be able to enter the command into your terminal without getting an error:  
 `run_microbe_census.py -h`

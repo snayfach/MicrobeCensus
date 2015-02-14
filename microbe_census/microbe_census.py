@@ -169,11 +169,11 @@ def auto_detect_fastq_format(seqfile):
 
 def impute_missing_args(args):
 	""" Fill in missing arguments with defaults """
+	if 'verbose' not in args:
+		args['verbose'] = False
+	
 	if 'outfile' not in args:
 		args['outfile'] = None
-	
-	if 'quiet' not in args:
-		args['quiet'] = True
 		
 	if 'nreads' not in args:
 		args['nreads'] = 1000000
@@ -265,7 +265,7 @@ def quality_filter(rec, args):
 
 def process_seqfile(args, paths):
 	""" Sample high quality reads from seqfile """
-	if not args['quiet']:
+	if args['verbose']:
 		print ("====Estimating Average Genome Size====")
 		print ("Sampling & trimming reads...")
 	outfile = open(paths['tempfile'], 'w')
@@ -294,7 +294,7 @@ def process_seqfile(args, paths):
 		sys.exit("\tError! No reads remaining after filtering!")
 	else:
 		args['sampled_reads'] = read_id
-	if not args['quiet']:
+	if args['verbose']:
 		print ("\t%s reads shorter than %s bp and skipped" % (too_short, args['read_length']))
 		print ("\t%s low quality reads found and skipped" % low_qual)
 		print ("\t%s duplicate reads found and skipped" % dups)
@@ -302,7 +302,7 @@ def process_seqfile(args, paths):
 
 def search_seqs(args, paths):
 	""" Search high quality reads against marker genes using RAPsearch2 """
-	if not args['quiet']:
+	if args['verbose']:
 		print ("Searching reads against marker proteins...")
 	devnull = open('/dev/null')
 	arguments = {'rapsearch': paths['rapsearch'], 'reads':paths['tempfile'], 'db':paths['db'], 'out':paths['tempfile'], 'threads':args['threads']}
@@ -314,7 +314,7 @@ def search_seqs(args, paths):
 		for line in open(paths['tempfile']+'.m8'):
 			if line[0] != '#': hits.append(line.split()[0])
 		distinct_hits = len(set(hits))
-		if not args['quiet']:
+		if args['verbose']:
 			print ("\t%s reads hit marker proteins" % str(distinct_hits))
 	else:
 		clean_up(paths)
@@ -362,7 +362,7 @@ def alignment_filter(aln_record, optpars):
 
 def classify_reads(args, paths):
 	""" Find best hit for each read and return dictionary {read_id:[fam_id, aln, cov, score]} """
-	if not args['quiet']:
+	if args['verbose']:
 		print ("Filtering hits...")
 	# read in lookups
 	optpars  = find_opt_pars(paths['params'], args['read_length'])
@@ -386,7 +386,7 @@ def classify_reads(args, paths):
 	if len(best_hits) == 0:
 		clean_up(paths)
 		sys.exit("\tError: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.")
-	elif not args['quiet']:
+	if args['verbose']:
 		print ("\t%s reads assigned to a marker protein" % len(best_hits))
 	return best_hits
 
@@ -412,7 +412,7 @@ def estimate_average_genome_size(args, paths, agg_hits):
 		Take a weighted average across remaining predictions:
 			AGS = Sum{j=1 to 30} AGS_j * Weight_j
 	"""
-	if not args['quiet']:
+	if args['verbose']:
 		print ("Computing average genome size...")
 	# read in model coefficients and weights
 	coeffs  = read_dic(paths['coeffs'],  header=False, dtype='float')
@@ -438,7 +438,7 @@ def estimate_average_genome_size(args, paths, agg_hits):
 			sum_weights += weight
 	est_ags = est_ags/sum_weights
 	# report results
-	if not args['quiet']:
+	if args['verbose']:
 		print ("\t%s bp" % str(round(est_ags, 2)))
 	return est_ags
 
@@ -464,7 +464,7 @@ def clean_up(paths):
 def run_pipeline(args):
 
 	# Print copyright
-	if not args['quiet']: print_copyright()
+	if 'verbose' in args and args['verbose']: print_copyright()
 	
 	# Make sure OS is Linux or Darwin
 	check_os()
@@ -476,7 +476,7 @@ def run_pipeline(args):
 	# Impute any missing arguments/options, sanity check, print to stdout
 	impute_missing_args(args)
 	check_arguments(args)
-	if not args['quiet']: print_parameters(args)
+	if args['verbose']: print_parameters(args)
 	
 	# Sample and QC reads from seqfile
 	process_seqfile(args, paths)

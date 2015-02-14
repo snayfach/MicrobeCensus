@@ -32,10 +32,8 @@ if __name__ == '__main__':
 						help='filter duplicate reads (default = False)')
 	parser.add_argument('-u', dest='max_unknown', type=int, default=100,
 						help='max percent of unknown bases (default = 100 percent; no filtering)')
-	parser.add_argument('-k', dest='keep_tmp', action='store_true', default=False,
-						help='keep temporary files (default = False)')
-	parser.add_argument('-s', dest='quiet', action='store_true', default=False,
-						help='suppress printing program\'s progress to stdout (default = False)')
+	parser.add_argument('-v', dest='verbose', action='store_true', default=False,
+						help='print program\'s progress to stdout (default = False)')
 	args = vars(parser.parse_args())
 
 	# run pipeline

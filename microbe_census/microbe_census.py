@@ -40,9 +40,6 @@ except: sys.exit("Could not import module 'tempfile.mkstemp'")
 try: import io
 except: sys.exit("Could not import module 'io'")
 
-try: import pkg_resources
-except: sys.exit("Could not import module 'pkg_resources'")
-
 #######################################################################################
 #   FUNCTIONS
 
@@ -111,14 +108,15 @@ def check_os():
 def get_relative_paths():
 	""" Fetch relative paths to data files """
 	paths = {}
-	paths['rapsearch'] = pkg_resources.resource_filename('microbe_census', 'bin/%s' % '_'.join(['rapsearch',platform.system(),'2.15']))
-	paths['db'] = pkg_resources.resource_filename('microbe_census', 'data/rapdb_2.15')
-	paths['fams'] = pkg_resources.resource_filename('microbe_census', 'data/gene_fam.map')
-	paths['genelen'] = pkg_resources.resource_filename('microbe_census', 'data/gene_len.map')
-	paths['params'] = pkg_resources.resource_filename('microbe_census', 'data/pars.map')
-	paths['coeffs'] = pkg_resources.resource_filename('microbe_census', 'data/coefficients.map')
-	paths['weights'] = pkg_resources.resource_filename('microbe_census', 'data/weights.map')
-	paths['readlen'] = pkg_resources.resource_filename('microbe_census', 'data/read_len.map')
+	pkg_dir = os.path.dirname(os.path.abspath(__file__))
+	paths['rapsearch'] = os.path.join(pkg_dir, 'bin/%s' % '_'.join(['rapsearch',platform.system(),'2.15']))
+	paths['db'] = os.path.join(pkg_dir, 'data/rapdb_2.15')
+	paths['fams'] = os.path.join(pkg_dir, 'data/gene_fam.map')
+	paths['genelen'] = os.path.join(pkg_dir, 'data/gene_len.map')
+	paths['params'] = os.path.join(pkg_dir, 'data/pars.map')
+	paths['coeffs'] = os.path.join(pkg_dir, 'data/coefficients.map')
+	paths['weights'] = os.path.join(pkg_dir, 'data/weights.map')
+	paths['readlen'] = os.path.join(pkg_dir, 'data/read_len.map')
 	paths['tempfile'] = mkstemp()[1]
 	return paths
 	

@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+# MicrobeCensus - estimation of average genome size from shotgun sequence data
+# Copyright (C) 2013-2014 Stephen Nayfach
+# Freely distributed under the GNU General Public License (GPLv3)
+
+__version__ = '1.0.3'
+
 import argparse
 from microbe_census import microbe_census
 
@@ -34,6 +40,8 @@ if __name__ == '__main__':
 						help='max percent of unknown bases (default = 100 percent; no filtering)')
 	parser.add_argument('-v', dest='verbose', action='store_true', default=False,
 						help='print program\'s progress to stdout (default = False)')
+	parser.add_argument('-V', '--version', action='version',
+						version='MicrobeCensus (version %s)' % __version__)
 	args = vars(parser.parse_args())
 
 	# run pipeline

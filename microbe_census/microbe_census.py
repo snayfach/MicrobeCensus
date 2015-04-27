@@ -261,6 +261,17 @@ def quality_filter(rec, args):
 	else:
 		return False
 
+def generator_wrapper(gen):
+	""" Wrapper to catch errors from BioPython """
+	while True:
+		try:
+			yield next(gen)
+		except StopIteration:
+			raise
+		except Exception, ValueError:
+			print("\tWarning: sequence record could not be parsed from input file. Skipping...")
+			pass
+
 def process_seqfile(args, paths):
 	""" Sample high quality reads from seqfile """
 	if args['verbose']:
@@ -270,7 +281,8 @@ def process_seqfile(args, paths):
 	# loop over sequences
 	read_id, dups, too_short, low_qual = 0, 0, 0, 0
 	seqs = set([])
-	for rec in parse(open_file(args['seqfile']), args['fastq_format'] if args['file_type'] == 'fastq' else 'fasta'):
+	seq_iterator = parse(open_file(args['seqfile']), args['fastq_format'] if args['file_type'] == 'fastq' else 'fasta')
+	for rec in generator_wrapper(seq_iterator):
 		# record sequence if enough high quality bases remain
 		if len(rec.seq) < args['read_length']:
 			too_short += 1; continue

@@ -13,7 +13,7 @@ Once AGS is obtained, it becomes possible to obtain the total coverage of microb
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.3.tar.gz  
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.4.tar.gz  
 
 Unpack the project: 
 `tar -zxvf MicrobeCensus-1.0.3.tar.gz`
@@ -174,5 +174,5 @@ We have included scripts and documentation for retraining MicrobeCensus, using u
 ### Citing
 If you use MicrobeCensus, please cite:  
 
-Average genome size estimation improves comparative metagenomics and sheds light on the functional ecology of the human microbiome. **Stephen Nayfach and Katherine Pollard**. _Genome Biology (in review)_.
+Nayfach, S. and Pollard, K.S. Average genome size estimation improves comparative metagenomics and sheds light on the functional ecology of the human microbiome. _Genome biology 2015;**16**(1):51_.
 

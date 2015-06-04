@@ -15,7 +15,7 @@ class my_install_lib(install_lib.install_lib):
 
 setup(
 	name = 'MicrobeCensus',
-	version = '1.0.3',
+	version = '1.0.4',
 	description = 'Estimation of average genome size from metagenomic data',
 	packages = ['microbe_census', 'tests'],
 	package_data={

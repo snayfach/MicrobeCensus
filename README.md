@@ -5,6 +5,8 @@ community from metagenomic data.
 In short, AGS is estimated by aligning reads to a set of universal single-copy gene families present in nearly all cellular microbes (Bacteria, Archaea, Fungi). 
 Because these genes occur once per genome, the average genome size of a microbial community is inversely proportional to the fraction of reads which hit these genes.
 
+Once AGS is obtained, it becomes possible to obtain the total coverage of microbial genomes present in a sample (genome equivalents = total bp sequenced/AGS in bp), which can be useful for normalizing gene abundances.
+
 ### Requirements
 * Python dependencies (installed via setup.py): Numpy, BioPython
 * Supported platforms: Mac OSX, Unix/Linux; Windows not currently supported
@@ -57,22 +59,37 @@ MicrobeCensus can either be run as a command-line script or imported to python a
 #### Command-line usage
 **run_microbe_census.py [-options] seqfile outfile**
 
-arguments:
-* **seqfile**: path to input metagenome. can be FASTA/FASTQ formatted. gzip (.gz) and bzip2 (.bz2) compression supported.
-* **outfile**: path to output file
+Input/Output (required):
+* **seqfile:**              path to input metagenome; can be FASTQ/FASTA; can be 
+                           gzip (.gz) or bzip (.bz2) compressed 
+* **outfile:**              path to output file containing AGS estimate 
 
-options: 
-* **-h, --help**: show this help message and exit 
-* **-n NREADS**: number of reads to use for AGS estimation (default = 1e6)  
-* **-l READ_LENGTH**: trim reads from 3' to this length (default = median read length of seqfile)  
-* **-f FILE_TYPE {fasta,fastq}**: FASTA or FASTQ formatted seqfile (default = autodetect)
-* **-c QUAL_ENCODE {fastq-sanger,fastq-solexa,fastq-illumina}**: Quality encoding for FASTQ files (default = autodetect)
-* **-t THREADS**: number of threads to use for database search (default = 1)  
-* **-q MIN_QUALITY**: minimum base-level PHRED quality score (default = -5)  
-* **-m MEAN_QUALITY**: minimum read-level PHRED quality score (default = -5)  
-* **-d**: filter duplicate reads (default = False)  
-* **-u MAX_UNKNOWN**: max percent of unknown bases (default = 100)  
-* **-v**: print program's progress to stdout (default = False)
+Pipeline throughput (optional):
+* **-n NREADS:**             number of reads to sample from seqfile and use for AGS
+                            estimation. to use all reads set to 100000000.
+                        (default = 1e6)
+* **-t THREADS:**            number of threads to use for database search (default= 1)
+
+File type (optional):
+* **-f {fasta,fastq}:**      file type (default = autodetect)
+* **-c {fastq-sanger,fastq-solexa,fastq-illumina}:** quality score encoding (default = autodetect)
+
+Quality control:
+* **-l {50,60,70,80,90,100,110,120,130,140,150,175,200,225,250,300,350,400,450,500}:**
+                        all reads trimmed to this length; reads shorter than
+                        this discarded (default = median read length)
+* **-q MIN_QUALITY:**        minimum base-level PHRED quality score (default = -5;
+                        no filtering)
+* **-m MEAN_QUALITY:**       minimum read-level PHRED quality score (default = -5;
+                        no filtering)
+* **-d:**                    filter duplicate reads (default = False)
+* **-u MAX_UNKNOWN:**        max percent of unknown bases perread (default = 100
+                        percent; no filtering)
+                        
+Misc options: 
+* **-h, --help:**            show this help message and exit 
+* **-v:**                    print program's progress to stdout (default = False) 
+* **-V, --version:**         show program's version number and exit 
 
 #### Module usage
 
@@ -102,28 +119,21 @@ Finally, the entire pipeline can be run by passing your arguments to the run_pip
 `average_genome_size, args = microbe_census.run_pipeline(args)`
 
 #### Recommended options
-* Use -n to limit the number of reads searched. Suggested values are between 500,000 and 1 million. Using more reads may result in slightly more accurate estimates of AGS, but will take more time to run.
-* Remove potential sources of contamination from your metagenome. This may include: adaptor sequences, host DNA, or viral DNA.  
-* Generally it is better to use more reads rather than longer reads.
-* Filter very low quality reads using -m 5 and -u 5.
-
-### Software speed
-* Run times are for a 150 bp library. Expect longer/shorter runtimes depending on read length.
-
-Threads (-t)  | Reads/Second
-------------- | -------------
-1  | 830
-2  | 1,300
-4  | 1,800
-8  | 2,000
-
+* When in doubt, use default parameters! In most cases, MicrobeCensus tries to pick the best parameters for you. 
+* For more accurate estimates of AGS, use -n to increase the number of reads sampled. The default value of 1,000,000 should give good results, but more reads may result in slightly more accurate estimates, particularly when AGS is very large.
+* Don't use quality filtering options (-q, -m, -d, -u) if you plan on using MicrobeCensus for normalization. In this case, MicrobeCensus should be directly run on the metagenome you used for estimating gene-family abundances.
 
 ### Normalization
-AGS estimated from MicrobeCensus can be used to normalize functional abundance profiles. We recommending using the statistic RPKG (reads per kb per genome equivalent) to quantify gene-family abundance from shotgun metagenomes. This is similar to the commonly used statistic RPKM, but instead of dividing by the number of total mapped reads, we divide by the number of genome equivalents:
+Once AGS is obtained, it becomes trivial to obtain the total coverage of microbial genomes present in a metagenome. 
 
->RPKG = (reads mapped to gene)/(gene length in kb)/(genome equivalents), where  
->genomes equivalent = (total DNA sequenced in bp)/(average genome size in bp), and  
->total DNA sequenced in bp = (read length in bp) * (reads sequenced)
+>genome equivalents = (total DNA sequenced in bp)/(average genome size in bp), and  
+>total DNA sequenced in bp = (read length in bp) * (reads sequenced)  
+
+**_Note: you will need to compute the total DNA sequenced in bp on your own! This value is not provided by MicrobeCensus._**
+
+The number of genome equivalents can then be used to normalize count data obtained from metagenomes using the statistic **RPKG (reads per kb per genome equivalent)**. This is similar to the commonly used statistic RPKM, but instead of dividing by the number of total mapped reads, we divide by the number of genome equivalents:
+
+>RPKG = (reads mapped to gene)/(gene length in kb)/(genome equivalents)
 
 Use case: 
 We have two metagenomic libraries, L1 and L2, which each contain 1 million 100-bp reads:
@@ -147,6 +157,16 @@ We get 100 reads mapped to gene G from each library:
 Finally, we quantify RPKG for gene G in each library:
 >RPKG for G in L1 = (100 mapped reads)/(1 kb)/(100,000,000 bp sequenced / 2,500,000 bp AGS) = 2.5  
 >RPKG for G in L2 = (100 mapped reads)/(1 kb)/(100,000,000 bp sequenced / 5,000,000 bp AGS) = 5.0  
+
+### Software speed
+* Run times are for a 150 bp library. Expect longer/shorter runtimes depending on read length.
+
+Threads (-t)  | Reads/Second
+------------- | -------------
+1  | 830
+2  | 1,300
+4  | 1,800
+8  | 2,000
 
 ### Training
 We have included scripts and documentation for retraining MicrobeCensus, using user-supplied training genomes and gene families. Documentation and scripts can be found under: MicrobeCensus/training

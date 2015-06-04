@@ -1,5 +1,5 @@
 # MicrobeCensus - estimation of average genome size from shotgun sequence data
-# Copyright (C) 2013-2014 Stephen Nayfach
+# Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
 # import libraries

@@ -1,5 +1,5 @@
 # MicrobeCensus - estimation of average genome size from shotgun sequence data
-# Copyright (C) 2013-2014 Stephen Nayfach
+# Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
 __version__ = '1.0.3'
@@ -134,7 +134,9 @@ def auto_detect_read_length(seqfile, file_type):
 	""" Find median read length from first 10K reads in seqfile """
 	valid_lengths = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500]
 	read_lengths = []
-	for index, record in enumerate(parse(open_file(seqfile), file_type)):
+	seq_iterator = parse(open_file(seqfile), file_type)
+#	for index, record in enumerate(generator_wrapper(seq_iterator, quiet=True)):
+	for index, record in enumerate(seq_iterator):
 		if index == 10000: break
 		read_lengths.append(len(record.seq))
 	median_read_length = int(median(read_lengths))
@@ -158,10 +160,13 @@ def auto_detect_fastq_format(seqfile):
 	formats = ['fastq-illumina', 'fastq-solexa', 'fastq-sanger']
 	for format in formats:
 		try:
-			for index, rec in enumerate(parse(open_file(seqfile), format)):
+			index = 0
+			seq_iterator = parse(open_file(seqfile), format)
+			for rec in seq_iterator:
 				if index == max_reads: break
+				index += 1
 			return format
-		except:
+		except Exception:
 			pass
 	sys.exit("Could not determine FASTQ quality encoding")
 
@@ -209,6 +214,11 @@ def impute_missing_args(args):
 	if args['file_type'] == 'fastq':
 		args['quality_type'] = 'solexa_quality' if args['fastq_format'] == 'fastq-solexa' else 'phred_quality'
 
+def check_input(args):
+	# check that input file exists
+	if not os.path.isfile(args['seqfile']):
+		sys.exit("Input file %s not found" % args['seqfile'])
+
 def check_arguments(args):
 	# QC options are not available for FASTA files
 	if args['file_type'] == 'fasta' and any([args['min_quality'] > -5, args['mean_quality'] > -5, args['fastq_format'] is not None]):
@@ -224,7 +234,7 @@ def print_copyright():
 	# print out copyright information
 	print ("\nMicrobeCensus - estimation of average genome size from shotgun sequence data")
 	print ("version %s; github.com/snayfach/MicrobeCensus" % __version__)
-	print ("Copyright (C) 2013-2014 Stephen Nayfach")
+	print ("Copyright (C) 2013-2015 Stephen Nayfach")
 	print ("Freely distributed under the GNU General Public License (GPLv3)\n")
 
 def print_parameters(args):
@@ -261,15 +271,17 @@ def quality_filter(rec, args):
 	else:
 		return False
 
-def generator_wrapper(gen):
+def generator_wrapper(gen, quiet):
 	""" Wrapper to catch errors from BioPython """
+	i = 0
 	while True:
+		i += 1
 		try:
 			yield next(gen)
 		except StopIteration:
 			raise
 		except Exception, ValueError:
-			print("\tWarning: sequence record could not be parsed from input file. Skipping...")
+			if not quiet: print("\tWarning: sequence record %s could not be parsed from input file. Skipping..." % i)
 			pass
 
 def process_seqfile(args, paths):
@@ -282,7 +294,7 @@ def process_seqfile(args, paths):
 	read_id, dups, too_short, low_qual = 0, 0, 0, 0
 	seqs = set([])
 	seq_iterator = parse(open_file(args['seqfile']), args['fastq_format'] if args['file_type'] == 'fastq' else 'fasta')
-	for rec in generator_wrapper(seq_iterator):
+	for rec in generator_wrapper(seq_iterator, quiet=False):
 		# record sequence if enough high quality bases remain
 		if len(rec.seq) < args['read_length']:
 			too_short += 1; continue
@@ -483,7 +495,8 @@ def run_pipeline(args):
 	paths = get_relative_paths()
 	check_paths(paths)
 
-	# Impute any missing arguments/options, sanity check, print to stdout
+	# Check input, impute any missing arguments/options, sanity check, print to stdout
+	check_input(args)
 	impute_missing_args(args)
 	check_arguments(args)
 	if args['verbose']: print_parameters(args)

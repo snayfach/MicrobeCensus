@@ -16,7 +16,7 @@ Once AGS is obtained, it becomes possible to obtain the total coverage of microb
 Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.4.tar.gz  
 
 Unpack the project: 
-`tar -zxvf MicrobeCensus-1.0.3.tar.gz`
+`tar -zxvf MicrobeCensus-1.0.4.tar.gz`
 
 Navigate to the installation directory:  
 `cd /path/to/MicrobeCensus`  

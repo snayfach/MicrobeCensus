@@ -124,13 +124,13 @@ Finally, the entire pipeline can be run by passing your arguments to the run_pip
 * Don't use quality filtering options (-q, -m, -d, -u) if you plan on using MicrobeCensus for normalization. In this case, MicrobeCensus should be directly run on the metagenome you used for estimating gene-family abundances.
 * Use -v/--verbose to print program progress
 
-#### Output format
+### Output format
 The output is a tab delimited field with a header line and three fields:
 * **reads_sampled**: this is the number of reads sampled from the metagenome to estimate AGS. it is likely that this is less than the actual number of reads in the metagenome
 * **read_length**: all reads were trimmed to this length. reads shorter than this were discarded. this is different from the actual read length of your metagenome
 * **avg_size**: the average genome size (in bp) of your input metagenome
 
-#### Normalization
+### Normalization
 Once AGS is obtained, it becomes trivial to obtain the total coverage of microbial genomes present in a metagenome. 
 
 >genome equivalents = (total DNA sequenced in bp)/(average genome size in bp), and  

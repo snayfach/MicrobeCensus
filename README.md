@@ -122,14 +122,21 @@ Finally, the entire pipeline can be run by passing your arguments to the run_pip
 * When in doubt, use default parameters! In most cases, MicrobeCensus tries to pick the best parameters for you. 
 * For more accurate estimates of AGS, use -n to increase the number of reads sampled. The default value of 1,000,000 should give good results, but more reads may result in slightly more accurate estimates, particularly when AGS is very large.
 * Don't use quality filtering options (-q, -m, -d, -u) if you plan on using MicrobeCensus for normalization. In this case, MicrobeCensus should be directly run on the metagenome you used for estimating gene-family abundances.
+* Use -v/--verbose to print program progress
 
-### Normalization
+#### Output format
+The output is a tab delimited field with a header line and three fields:
+* **reads_sampled**: this is the number of reads sampled from the metagenome to estimate AGS. it is likely that this is less than the actual number of reads in the metagenome
+* **read_length**: all reads were trimmed to this length. reads shorter than this were discarded. this is different from the actual read length of your metagenome
+* **avg_size**: the average genome size (in bp) of your input metagenome
+
+#### Normalization
 Once AGS is obtained, it becomes trivial to obtain the total coverage of microbial genomes present in a metagenome. 
 
 >genome equivalents = (total DNA sequenced in bp)/(average genome size in bp), and  
 >total DNA sequenced in bp = (read length in bp) * (reads sequenced)  
 
-**_Note: you will need to compute the total DNA sequenced in bp on your own! This value is not provided by MicrobeCensus._**
+**_Note: you will need to compute the total DNA sequenced in bp on your own! This value is not provided by MicrobeCensus and cannot be obtained using the MicrobeCensus output._**
 
 The number of genome equivalents can then be used to normalize count data obtained from metagenomes using the statistic **RPKG (reads per kb per genome equivalent)**. This is similar to the commonly used statistic RPKM, but instead of dividing by the number of total mapped reads, we divide by the number of genome equivalents:
 

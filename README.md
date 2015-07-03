@@ -74,7 +74,7 @@ File type (optional):
 * **-f {fasta,fastq}:**      file type (default = autodetect)
 * **-c {fastq-sanger,fastq-solexa,fastq-illumina}:** quality score encoding (default = autodetect)
 
-Quality control:
+Quality control (optional):
 * **-l {50,60,70,80,90,100,110,120,130,140,150,175,200,225,250,300,350,400,450,500}:**
                         all reads trimmed to this length; reads shorter than
                         this discarded (default = median read length)

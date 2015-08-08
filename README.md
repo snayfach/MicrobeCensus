@@ -13,10 +13,10 @@ Once AGS is obtained, it becomes possible to obtain the total coverage of microb
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.4.tar.gz  
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.5.tar.gz  
 
 Unpack the project: 
-`tar -zxvf MicrobeCensus-1.0.4.tar.gz`
+`tar -zxvf MicrobeCensus-1.0.5.tar.gz`
 
 Navigate to the installation directory:  
 `cd /path/to/MicrobeCensus`  
@@ -174,6 +174,22 @@ Threads (-t)  | Reads/Second
 2  | 1,300
 4  | 1,800
 8  | 2,000
+
+### Known bugs/issues
+* MicrobeCensus cannot hande FASTQ files with invalid formatting. See: https://en.wikipedia.org/wiki/FASTQ_format#Format. Common mistakes include differences in descriptions between sequence and quality headers:
+```
+@SEQ_ID
+GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT
++SEQ_ID not ok
+!''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
+```
+```
+@SEQ_ID this is ok
+GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT
++SEQ_ID this is ok
+!''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
+```
+
 
 ### Training
 We have included scripts and documentation for retraining MicrobeCensus, using user-supplied training genomes and gene families. Documentation and scripts can be found under: MicrobeCensus/training

@@ -4,7 +4,7 @@
 # Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
-__version__ = '1.0.4'
+__version__ = '1.0.5'
 
 import argparse
 from microbe_census import microbe_census
@@ -20,13 +20,13 @@ if __name__ == '__main__':
 	io.add_argument('outfile', type=str,
 						help='path to output file containing AGS estimate')
 
-	speed = parser.add_argument_group('Pipeline throughput')
+	speed = parser.add_argument_group('Pipeline throughput (optional)')
 	speed.add_argument('-n', dest='nreads', type=int, default=1000000,
 						help='number of reads to sample from seqfile and use for AGS estimation. to use all reads set to 100000000. (default = 1e6)')
 	speed.add_argument('-t', dest='threads', type=int, default=1,
 						help='number of threads to use for database search (default = 1)')
 
-	type = parser.add_argument_group('File type')
+	type = parser.add_argument_group('File type (optional)')
 	type.add_argument('-f', dest='file_type', type=str,
 						help='file type (default = autodetect)',
 						choices=['fasta', 'fastq'])
@@ -34,7 +34,7 @@ if __name__ == '__main__':
 						help='quality score encoding (default = autodetect)',
 						choices=['fastq-sanger', 'fastq-solexa', 'fastq-illumina'])
 
-	qc = parser.add_argument_group('Quality control')
+	qc = parser.add_argument_group('Quality control (optional)')
 	qc.add_argument('-l', dest='read_length', type=int,
 						help='all reads trimmed to this length; reads shorter than this discarded (default = median read length)',
 						choices=[50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500])

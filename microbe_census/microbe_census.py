@@ -2,7 +2,7 @@
 # Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
-__version__ = '1.0.4'
+__version__ = '1.0.5'
 
 #######################################################################################
 #   IMPORT LIBRARIES
@@ -134,11 +134,13 @@ def auto_detect_read_length(seqfile, file_type):
 	""" Find median read length from first 10K reads in seqfile """
 	valid_lengths = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500]
 	read_lengths = []
-	seq_iterator = parse(open_file(seqfile), file_type)
-#	for index, record in enumerate(generator_wrapper(seq_iterator, quiet=True)):
-	for index, record in enumerate(seq_iterator):
-		if index == 10000: break
-		read_lengths.append(len(record.seq))
+	try:
+		seq_iterator = parse(open_file(seqfile), file_type)
+		for index, record in enumerate(seq_iterator):
+			if index == 10000: break
+			read_lengths.append(len(record.seq))
+	except Exception:
+		sys.exit("Could not detect read length of: %s\nThis may be due to an invalid format\nTry specifying it with -l" % seqfile)
 	median_read_length = int(median(read_lengths))
 	if median_read_length < valid_lengths[0]:
 		sys.exit("Median read length is %s. Cannot compute AGS using reads shorter than 50 bp." % median_read_length)
@@ -168,7 +170,7 @@ def auto_detect_fastq_format(seqfile):
 			return format
 		except Exception:
 			pass
-	sys.exit("Could not determine FASTQ quality encoding")
+	sys.exit("Could not detect quality score encoding of: %s\nThis may be due to an invalid format\nTry specifying it with -c" % seqfile)
 
 def impute_missing_args(args):
 	""" Fill in missing arguments with defaults """
@@ -271,19 +273,6 @@ def quality_filter(rec, args):
 	else:
 		return False
 
-def generator_wrapper(gen, quiet):
-	""" Wrapper to catch errors from BioPython """
-	i = 0
-	while True:
-		i += 1
-		try:
-			yield next(gen)
-		except StopIteration:
-			raise
-		except Exception, ValueError:
-			if not quiet: print("\tWarning: sequence record %s could not be parsed from input file. Skipping..." % i)
-			pass
-
 def process_seqfile(args, paths):
 	""" Sample high quality reads from seqfile """
 	if args['verbose']:
@@ -294,22 +283,27 @@ def process_seqfile(args, paths):
 	read_id, dups, too_short, low_qual = 0, 0, 0, 0
 	seqs = set([])
 	seq_iterator = parse(open_file(args['seqfile']), args['fastq_format'] if args['file_type'] == 'fastq' else 'fasta')
-	for rec in generator_wrapper(seq_iterator, quiet=False):
-		# record sequence if enough high quality bases remain
-		if len(rec.seq) < args['read_length']:
-			too_short += 1; continue
-		# check if sequence is a duplicate
-		elif args['filter_dups'] and (str(rec.seq) in seqs or str(rec.seq.reverse_complement()) in seqs):
-			dups += 1; continue
-		# check if sequence is low quality
-		elif quality_filter(rec, args):
-			low_qual += 1; continue
-		# keep seq
-		else:
-			outfile.write('>'+str(read_id)+'\n'+str(rec.seq[0:args['read_length']])+'\n')
-			read_id += 1
-			if args['filter_dups']: seqs.add(str(sequence))
-			if read_id == args['nreads']: break
+	i = 0
+	try:
+		for rec in seq_iterator:
+			i += 1
+			# record sequence if enough high quality bases remain
+			if len(rec.seq) < args['read_length']:
+				too_short += 1; continue
+			# check if sequence is a duplicate
+			elif args['filter_dups'] and (str(rec.seq) in seqs or str(rec.seq.reverse_complement()) in seqs):
+				dups += 1; continue
+			# check if sequence is low quality
+			elif quality_filter(rec, args):
+				low_qual += 1; continue
+			# keep seq
+			else:
+				outfile.write('>'+str(read_id)+'\n'+str(rec.seq[0:args['read_length']])+'\n')
+				read_id += 1
+				if args['filter_dups']: seqs.add(str(sequence))
+				if read_id == args['nreads']: break
+	except Exception:
+		sys.exit("""An error was encountered when parsing sequence #%s in the input file: %s\nFor FASTQ files, make sure that the sequence and quality headers are the same for each sequence (except the 1st character)""" % (i+1, args['seqfile']))
 	# report summary
 	if read_id == 0:
 		clean_up(paths)

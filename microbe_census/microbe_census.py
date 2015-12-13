@@ -2,7 +2,7 @@
 # Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
-__version__ = '1.0.5'
+__version__ = '1.0.6'
 
 #######################################################################################
 #   IMPORT LIBRARIES
@@ -202,24 +202,25 @@ def impute_missing_args(args):
 		args['max_unknown'] = 100
 
 	if 'file_type' not in args or args['file_type'] is None:
-		args['file_type'] = auto_detect_file_type(args['seqfile'])
+		args['file_type'] = auto_detect_file_type(args['seqfiles'][0])
 
 	if 'read_length' not in args or args['read_length'] is None:
-		args['read_length'] = auto_detect_read_length(args['seqfile'], args['file_type'])
+		args['read_length'] = auto_detect_read_length(args['seqfiles'][0], args['file_type'])
 
 	if 'fastq_format' not in args:
 		args['fastq_format'] = None
 
 	if args['file_type'] == 'fastq' and args['fastq_format'] is None:
-		args['fastq_format'] = auto_detect_fastq_format(args['seqfile'])
+		args['fastq_format'] = auto_detect_fastq_format(args['seqfiles'][0])
 		
 	if args['file_type'] == 'fastq':
 		args['quality_type'] = 'solexa_quality' if args['fastq_format'] == 'fastq-solexa' else 'phred_quality'
 
 def check_input(args):
 	# check that input file exists
-	if not os.path.isfile(args['seqfile']):
-		sys.exit("Input file %s not found" % args['seqfile'])
+	for seqfile in args['seqfiles']:
+		if not os.path.isfile(seqfile):
+			sys.exit("Input file %s not found" % seqfile)
 
 def check_arguments(args):
 	# QC options are not available for FASTA files
@@ -242,7 +243,7 @@ def print_copyright():
 def print_parameters(args):
 	# print out parameters
 	print ("=============Parameters==============")
-	print ("Input metagenome: %s" % args['seqfile'])
+	print ("Input metagenome: %s" % args['seqfiles'])
 	print ("Output file: %s" % args['outfile'])
 	print ("Reads trimmed to: %s bp" % args['read_length'])
 	print ("Maximum reads sampled: %s" % args['nreads'])
@@ -282,32 +283,37 @@ def process_seqfile(args, paths):
 	# loop over sequences
 	read_id, dups, too_short, low_qual = 0, 0, 0, 0
 	seqs = set([])
-	seq_iterator = parse(open_file(args['seqfile']), args['fastq_format'] if args['file_type'] == 'fastq' else 'fasta')
-	i = 0
-	try:
-		for rec in seq_iterator:
-			i += 1
-			# record sequence if enough high quality bases remain
-			if len(rec.seq) < args['read_length']:
-				too_short += 1; continue
-			# check if sequence is a duplicate
-			elif args['filter_dups'] and (str(rec.seq) in seqs or str(rec.seq.reverse_complement()) in seqs):
-				dups += 1; continue
-			# check if sequence is low quality
-			elif quality_filter(rec, args):
-				low_qual += 1; continue
-			# keep seq
-			else:
-				outfile.write('>'+str(read_id)+'\n'+str(rec.seq[0:args['read_length']])+'\n')
-				read_id += 1
-				if args['filter_dups']: seqs.add(str(sequence))
-				if read_id == args['nreads']: break
-	except Exception:
-		sys.exit("""An error was encountered when parsing sequence #%s in the input file: %s\nFor FASTQ files, make sure that the sequence and quality headers are the same for each sequence (except the 1st character)""" % (i+1, args['seqfile']))
+	for seqfile in args['seqfiles']:
+		i = 0
+		try:
+			seq_iterator = parse(open_file(seqfile), args['fastq_format'] if args['file_type'] == 'fastq' else 'fasta')
+			for rec in seq_iterator:
+				i += 1
+				# record sequence if enough high quality bases remain
+				if len(rec.seq) < args['read_length']:
+					too_short += 1; continue
+				# check if sequence is a duplicate
+				elif args['filter_dups'] and (str(rec.seq) in seqs or str(rec.seq.reverse_complement()) in seqs):
+					dups += 1; continue
+				# check if sequence is low quality
+				elif quality_filter(rec, args):
+					low_qual += 1; continue
+				# keep seq
+				else:
+					outfile.write('>'+str(read_id)+'\n'+str(rec.seq[0:args['read_length']])+'\n')
+					read_id += 1
+					if args['filter_dups']: seqs.add(str(rec.seq))
+					if read_id == args['nreads']: break
+			if read_id == args['nreads']: break
+		except Exception, e:
+			error = "\nAn error was encountered when parsing sequence #%s in the input file: %s\n" % (i+1, seqfile)
+			error += "Make sure that the sequence and quality headers match for each sequence (- the 1st character)\n"
+			error += "See: https://en.wikipedia.org/wiki/FASTQ_format"
+			sys.exit(error)
 	# report summary
 	if read_id == 0:
 		clean_up(paths)
-		sys.exit("\tError! No reads remaining after filtering!")
+		sys.exit("\nError! No reads remaining after filtering!")
 	else:
 		args['sampled_reads'] = read_id
 	if args['verbose']:
@@ -323,8 +329,9 @@ def search_seqs(args, paths):
 	devnull = open('/dev/null')
 	arguments = {'rapsearch': paths['rapsearch'], 'reads':paths['tempfile'], 'db':paths['db'], 'out':paths['tempfile'], 'threads':args['threads']}
 	command = "%(rapsearch)s -q %(reads)s -d %(db)s -o %(out)s -z %(threads)s -e 1 -t n -p f -b 0" % arguments
-	process = subprocess.Popen(command, shell=True, stdout=devnull, stderr=devnull)
+	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	retcode = process.wait()
+	output, error = process.communicate()
 	if retcode == 0:
 		hits = []
 		for line in open(paths['tempfile']+'.m8'):
@@ -334,7 +341,7 @@ def search_seqs(args, paths):
 			print ("\t%s reads hit marker proteins" % str(distinct_hits))
 	else:
 		clean_up(paths)
-		sys.exit("\tDatabase search has exited with an error!")
+		sys.exit("\nDatabase search has exited with the following error:\n%s" % error)
 
 def parse_rapsearch(m8):
 	""" Yield formatted record from RAPsearch2 m8 file """
@@ -401,7 +408,7 @@ def classify_reads(args, paths):
 	# report summary
 	if len(best_hits) == 0:
 		clean_up(paths)
-		sys.exit("\tError: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.")
+		sys.exit("\nError: No hits to marker proteins - cannot estimate genome size! Rerun program with more reads.")
 	if args['verbose']:
 		print ("\t%s reads assigned to a marker protein" % len(best_hits))
 	return best_hits
@@ -458,14 +465,23 @@ def estimate_average_genome_size(args, paths, agg_hits):
 		print ("\t%s bp" % str(round(est_ags, 2)))
 	return est_ags
 
-def report_results(args, est_ags):
-    """ Write estimated average genome size to tab delimited text file """
-    outfile = open(args['outfile'], 'w')
-    header = ['reads_sampled', 'read_length', 'avg_size']
-    outfile.write('\t'.join(header)+'\n')
-    record = [args['sampled_reads'], args['read_length'], est_ags]
-    outfile.write('\t'.join([str(x) for x in record])+'\n')
-    outfile.close()
+def report_results(args, est_ags, count_bases):
+	""" Write estimated average genome size to tab delimited text file """
+	outfile = open(args['outfile'], 'w')
+	outfile.write('Parameters\n')
+	outfile.write('%s:\t%s\n' % ('metagenome', ','.join(args['seqfiles'])))
+	outfile.write('%s:\t%s\n' % ('reads_sampled', args['sampled_reads']))
+	outfile.write('%s:\t%s\n' % ('trimmed_length', args['read_length']))
+	outfile.write('%s:\t%s\n' % ('min_quality', args['min_quality']))
+	outfile.write('%s:\t%s\n' % ('mean_quality', args['mean_quality']))
+	outfile.write('%s:\t%s\n' % ('filter_dups', args['filter_dups']))
+	outfile.write('%s:\t%s\n' % ('max_unknown', args['max_unknown']))
+
+	outfile.write('\nResults\n')
+	outfile.write('%s:\t%s\n' % ('average_genome_size', est_ags))
+	outfile.write('%s:\t%s\n' % ('total_bases', count_bases))
+	outfile.write('%s:\t%s\n' % ('genome_equivilants', count_bases/est_ags))
+	outfile.close()
 
 def clean_up(paths):
 	""" Remove all temporary files """
@@ -476,6 +492,50 @@ def clean_up(paths):
 	for file in temp_files:
 		if os.path.isfile(file):
 			os.remove(file)
+
+def read_seqfile(infile):
+	""" https://github.com/lh3/readfq/blob/master/readfq.py 
+		A generator function for parsing fasta/fastq records """
+	last = None # this is a buffer keeping the last unprocessed line
+	while True: # mimic closure; is it a bad idea?
+		if not last: # the first record or a record following a fastq
+			for l in infile: # search for the start of the next record
+				if l[0] in '>@': # fasta/q header line
+					last = l[:-1] # save this line
+					break
+		if not last: break
+		name, seqs, last = last[1:].partition(" ")[0], [], None
+		for l in infile: # read the sequence
+			if l[0] in '@+>':
+				last = l[:-1]
+				break
+			seqs.append(l[:-1])
+		if not last or last[0] != '+': # this is a fasta record
+			yield name, ''.join(seqs), None # yield a fasta record
+			if not last: break
+		else: # this is a fastq record
+			seq, leng, seqs = ''.join(seqs), 0, []
+			for l in infile: # read the quality
+				seqs.append(l[:-1])
+				leng += len(l) - 1
+				if leng >= len(seq): # have read enough quality
+					last = None
+					yield name, seq, ''.join(seqs); # yield a fastq record
+					break
+			if last: # reach EOF before reading enough quality
+				yield name, seq, None # yield a fasta record instead
+				break
+
+def count_bases(seqfiles):
+	""" Count total genome coverage in seqfile(s) """
+	total_bp = 0
+	for inpath in seqfiles:
+		bp = 0
+		infile = open_file(inpath)
+		for name, seq, qual in read_seqfile(infile):
+			bp += len(seq)
+		total_bp += bp
+	return total_bp
 
 def run_pipeline(args):
 

@@ -18,7 +18,7 @@ class Pipeline(unittest.TestCase):
 	def setUp(self):
 		self.expected = 3530599.61
 		self.infile = os.path.join(data_dir, 'metagenome.fa.gz')
-		self.observed = microbe_census.run_pipeline({'seqfile':self.infile})[0]
+		self.observed = microbe_census.run_pipeline({'seqfiles':[self.infile]})[0]
 
 	def test_ags_estimation(self):
 		estimation_error = abs(self.expected-self.observed)/self.expected

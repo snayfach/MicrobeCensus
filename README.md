@@ -163,7 +163,7 @@ The number of genome equivalents can be used to normalize count data obtained fr
 
 Use case: 
 We have two metagenomic libraries, L1 and L2, and we use MicrobeCensus to estimate the number of genome equivilants in each: 
->GE_L1 = 40
+>GE_L1 = 40  
 >GE_L2 = 20  
 
 Next, we map reads from each library to a reference database which contains a gene of interest G. G is 1000 bp long. 

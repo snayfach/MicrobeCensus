@@ -309,6 +309,7 @@ def process_seqfile(args, paths):
 			error = "\nAn error was encountered when parsing sequence #%s in the input file: %s\n" % (i+1, seqfile)
 			error += "Make sure that the sequence and quality headers match for each sequence (- the 1st character)\n"
 			error += "See: https://en.wikipedia.org/wiki/FASTQ_format"
+			clean_up(paths)
 			sys.exit(error)
 	# report summary
 	if read_id == 0:
@@ -485,13 +486,12 @@ def report_results(args, est_ags, count_bases):
 
 def clean_up(paths):
 	""" Remove all temporary files """
-	temp_files = []
-	temp_files.append(paths['tempfile'])
-	temp_files.append(paths['tempfile']+'.m8')
-	temp_files.append(paths['tempfile']+'.aln')
-	for file in temp_files:
-		if os.path.isfile(file):
-			os.remove(file)
+	for ext in ['', '.m8', '.aln']:
+		for i in range(20):
+			file = paths['tempfile']+'%s.tmp%s' % (ext, i)
+			if os.path.isfile(file): os.remove(file)
+		file = paths['tempfile']+'%s' % ext
+		if os.path.isfile(file): os.remove(file)
 
 def read_seqfile(infile):
 	""" https://github.com/lh3/readfq/blob/master/readfq.py 
@@ -549,29 +549,32 @@ def run_pipeline(args):
 	paths = get_relative_paths()
 	check_paths(paths)
 
-	# Check input, impute any missing arguments/options, sanity check, print to stdout
-	check_input(args)
-	impute_missing_args(args)
-	check_arguments(args)
-	if args['verbose']: print_parameters(args)
-	
-	# Sample and QC reads from seqfile
-	process_seqfile(args, paths)
-	
-	# Search reads against marker gene families
-	search_seqs(args, paths)
-	
-	# Classify reads according to optimal parameters
-	best_hits = classify_reads(args, paths)
-	
-	# Count # hits to each gene family
-	agg_hits = aggregate_hits(args, paths, best_hits)
+	try:
+		# Check input, impute any missing arguments/options, sanity check, print to stdout
+		check_input(args)
+		impute_missing_args(args)
+		check_arguments(args)
+		if args['verbose']: print_parameters(args)
+
+		# Sample and QC reads from seqfile
+		process_seqfile(args, paths)
 		
-	# Remove temporary files
-	clean_up(paths)
+		# Search reads against marker gene families
+		search_seqs(args, paths)
+		
+		# Classify reads according to optimal parameters
+		best_hits = classify_reads(args, paths)
+		
+		# Count # hits to each gene family
+		agg_hits = aggregate_hits(args, paths, best_hits)
+			
+		# Remove temporary files
+		clean_up(paths)
 
-	# Estimate average genome size
-	est_ags = estimate_average_genome_size(args, paths, agg_hits)
-	return est_ags, args
+		# Estimate average genome size
+		est_ags = estimate_average_genome_size(args, paths, agg_hits)
+		return est_ags, args
 
+	except:
+		clean_up(paths)
 

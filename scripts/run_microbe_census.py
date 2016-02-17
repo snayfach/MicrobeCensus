@@ -4,7 +4,7 @@
 # Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
-__version__ = '1.0.5'
+__version__ = '1.0.7'
 
 import argparse
 from microbe_census import microbe_census

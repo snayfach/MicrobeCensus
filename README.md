@@ -13,10 +13,10 @@ Once AGS is obtained, it becomes possible to obtain the total coverage of microb
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.6.tar.gz  
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.7.tar.gz  
 
 Unpack the project: 
-`tar -zxvf MicrobeCensus-1.0.6.tar.gz`
+`tar -zxvf MicrobeCensus-1.0.7.tar.gz`
 
 Navigate to the installation directory:  
 `cd /path/to/MicrobeCensus`  

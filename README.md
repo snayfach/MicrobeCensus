@@ -27,7 +27,8 @@ Run setup.py. This will install any dependencies:
 
 Alternatively, MicrobeCensus can be installed directly from PyPI:  
 `pip install MicrobeCensus` or   
-`sudo pip install MicrobeCensus` to install as a superuser
+`sudo pip install MicrobeCensus` to install as a superuser, or  
+`pip install --user MicrobeCensus` to install in your home directory  
 
 ### Using MicrobeCensus without installing
 Although this is not recommended, users may wish to run MicrobeCensus without running setup.py.  

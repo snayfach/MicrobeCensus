@@ -2,7 +2,7 @@
 # Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
-__version__ = '1.0.6'
+__version__ = '1.0.7'
 
 #######################################################################################
 #   IMPORT LIBRARIES
@@ -477,11 +477,11 @@ def report_results(args, est_ags, count_bases):
 	outfile.write('%s:\t%s\n' % ('mean_quality', args['mean_quality']))
 	outfile.write('%s:\t%s\n' % ('filter_dups', args['filter_dups']))
 	outfile.write('%s:\t%s\n' % ('max_unknown', args['max_unknown']))
-
 	outfile.write('\nResults\n')
 	outfile.write('%s:\t%s\n' % ('average_genome_size', est_ags))
-	outfile.write('%s:\t%s\n' % ('total_bases', count_bases))
-	outfile.write('%s:\t%s\n' % ('genome_equivilants', count_bases/est_ags))
+	if count_bases:
+		outfile.write('%s:\t%s\n' % ('total_bases', count_bases))
+		outfile.write('%s:\t%s\n' % ('genome_equivalents', count_bases/est_ags))
 	outfile.close()
 
 def clean_up(paths):
@@ -526,10 +526,12 @@ def read_seqfile(infile):
 				yield name, seq, None # yield a fasta record instead
 				break
 
-def count_bases(seqfiles):
+def count_bases(args):
 	""" Count total genome coverage in seqfile(s) """
+	if args['verbose']:
+		print ("Computing number of genome equivalents...")
 	total_bp = 0
-	for inpath in seqfiles:
+	for inpath in args['seqfiles']:
 		bp = 0
 		infile = open_file(inpath)
 		for name, seq, qual in read_seqfile(infile):
@@ -575,6 +577,7 @@ def run_pipeline(args):
 		est_ags = estimate_average_genome_size(args, paths, agg_hits)
 		return est_ags, args
 
-	except:
+	except Exception as error:
+		print(error)
 		clean_up(paths)
 

@@ -13,10 +13,10 @@ Once AGS is obtained, it becomes possible to obtain the total coverage of microb
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.6.tar.gz  
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.7.tar.gz
 
 Unpack the project: 
-`tar -zxvf MicrobeCensus-1.0.6.tar.gz`
+`tar -zxvf MicrobeCensus-1.0.7.tar.gz`
 
 Navigate to the installation directory:  
 `cd /path/to/MicrobeCensus`  
@@ -154,7 +154,7 @@ For normalization, you can also estimate the number of genome equivalents in you
 **Results**  
 *average_genome_size*: the average genome size (in bp) of your input metagenome  
 *total_bases*: the total number of base-pairs of your input metagenome  
-*genome_equivilants*: the total coverage of microbial genomes in your input metagenome
+*genome_equivalents*: the total coverage of microbial genomes in your input metagenome
 
 ### Normalization
 The number of genome equivalents can be used to normalize count data obtained from metagenomes using the statistic **RPKG (reads per kb per genome equivalent)**. This is similar to the commonly used statistic RPKM, but instead of dividing by the number of total mapped reads, we divide by the number of genome equivalents:

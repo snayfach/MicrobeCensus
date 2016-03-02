@@ -13,7 +13,7 @@ Once AGS is obtained, it becomes possible to obtain the total coverage of microb
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.7.tar.gz
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.7.tar.gz  
 
 Unpack the project: 
 `tar -zxvf MicrobeCensus-1.0.7.tar.gz`
@@ -27,7 +27,8 @@ Run setup.py. This will install any dependencies:
 
 Alternatively, MicrobeCensus can be installed directly from PyPI:  
 `pip install MicrobeCensus` or   
-`sudo pip install MicrobeCensus` to install as a superuser
+`sudo pip install MicrobeCensus` to install as a superuser, or  
+`pip install --user MicrobeCensus` to install in your home directory  
 
 ### Using MicrobeCensus without installing
 Although this is not recommended, users may wish to run MicrobeCensus without running setup.py.  
@@ -60,12 +61,12 @@ MicrobeCensus can either be run as a command-line script or imported to python a
 **run_microbe_census.py [-options] seqfiles outfile**
 
 Input/Output (required):
-* **seqfiles**  
+* **SEQFILES**  
 path to input metagenome(s)  
 for paired-end metagenomes use commas to specify each file (ex: read_1.fq.gz,read_2.fq.gz)  
 can be FASTQ/FASTA  
 can be gzip (.gz) or bzip (.bz2) compressed
-* **outfile**  
+* **OUTFILE**  
 path to output file containing AGS estimate 
 
 Pipeline throughput (optional):
@@ -74,7 +75,10 @@ number of reads to sample from seqfile and use for AGS estimation.
 to use all reads set to large number, like 100000000  
 (default = 2000000)
 * **-t THREADS**  
-number of threads to use for database search (default= 1)
+number of threads to use for database search (default= 1)  
+* **-e**  
+quit after average genome size is obtained and do not estimate the number of genome equivalents in SEQFILES.  
+useful in combination with -n for quick tests (default = False)  
 
 File type (optional):
 * **-f {fasta,fastq}**  

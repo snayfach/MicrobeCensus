@@ -145,6 +145,10 @@ For normalization, you can also estimate the number of genome equivalents in you
 * Don't use quality filtering options (-q, -m, -d, -u) if you plan on using MicrobeCensus for normalization. In this case, MicrobeCensus should be directly run on the metagenome you used for estimating gene-family abundances.
 * Use -v/--verbose to print program progress
 
+#### Temporary files  
+MicrobeCensus writes several temporary files to disk. The location where temporary files are written are determined by the environmental variable TMPDIR. You can change this location as follows:  
+`export TMPDIR=/new/location/for/temorary/files`
+
 ### Output format
 **Parameters**  
 *metagenome*: path to your metagenome(s)  

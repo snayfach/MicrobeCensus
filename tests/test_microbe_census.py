@@ -80,42 +80,6 @@ class FileType(unittest.TestCase):
 	def tearDown(self): # clean up tmp directory
 		shutil.rmtree(self.dir)
 
-
-class QualEncode(unittest.TestCase):
-	""" check whether fastq quality encoding is correctly determined """
-
-	def setUp(self): # create test files in tmp directory
-		self.dir = tempfile.mkdtemp()
-		self.values = [['file.sanger', 'fastq-sanger',
-		               ("""@HWUSI-EAS574_102539073:1:100:10000:12882/1""",
-						"""AGCTCTTCCAGCGATACAATACCATCGTTCCTTCGGTAGCATC""",
-						"""+HWUSI-EAS574_102539073:1:100:10000:12882/1""",
-						"""!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIII""")],
-					   ['file.solexa', 'fastq-solexa',
-		               ("""@HWUSI-EAS574_102539073:1:100:10000:12882/1""",
-						"""AGCTCTTCCAGCGATACAATACCATCGTTCCTTCGGTAGCATC""",
-						"""+HWUSI-EAS574_102539073:1:100:10000:12882/1""",
-						""";<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcde""")],
-					   ['file.illumina', 'fastq-illumina',
-		               ("""@HWUSI-EAS574_102539073:1:100:10000:12882""",
-						"""AGCTCTTCCAGCGATACAATACCATCGTTCCTTCGGTAGCA""",
-						"""+HWUSI-EAS574_102539073:1:100:10000:12882""",
-						"""@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefgh""")]]
-		for name, type, values in self.values:
-			inpath = os.path.join(self.dir, name)
-			infile = open(inpath, 'w')
-			for value in values: infile.write(value+'\n')
-
-	def test_detect_qualtype(self):
-		for filename, exptype, seqs in self.values:
-			inpath = os.path.join(self.dir, filename)
-			obstype = microbe_census.auto_detect_fastq_format(inpath)
-			self.assertEqual(obstype, exptype)
-
-	def tearDown(self): # clean up tmp directory
-		shutil.rmtree(self.dir)
-
-
 if __name__ == '__main__':
 	unittest.main()
 

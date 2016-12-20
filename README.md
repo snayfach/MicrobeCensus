@@ -13,10 +13,10 @@ Once AGS is obtained, it becomes possible to obtain the total coverage of microb
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.0.7.tar.gz  
+Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.1.0.tar.gz  
 
 Unpack the project: 
-`tar -zxvf MicrobeCensus-1.0.7.tar.gz`
+`tar -zxvf MicrobeCensus-1.1.0.tar.gz`
 
 Navigate to the installation directory:  
 `cd /path/to/MicrobeCensus`  
@@ -80,12 +80,6 @@ number of threads to use for database search (default= 1)
 quit after average genome size is obtained and do not estimate the number of genome equivalents in SEQFILES.  
 useful in combination with -n for quick tests (default = False)  
 
-File type (optional):
-* **-f {fasta,fastq}**  
-file type (default = autodetect)
-* **-c {fastq-sanger,fastq-solexa,fastq-illumina}**  
-quality score encoding (default = autodetect)
-
 Quality control (optional):
 * **-l {50,60,70,80,90,100,110,120,130,140,150,175,200,225,250,300,350,400,450,500}**  
 all reads trimmed to this length; reads shorter than this are discarded  
@@ -103,6 +97,9 @@ Misc options:
 * **-h, --help:**            show this help message and exit 
 * **-v:**                    print program's progress to stdout (default = False) 
 * **-V, --version:**         show program's version number and exit 
+* **-r RAPSEARCH**         
+path to external RAPsearch2 v2.15 binary.  
+useful if precompiled RAPsearch2 v2.15 binary included with MicrobeCensus does not work on your system
 
 #### Module usage
 
@@ -121,8 +118,6 @@ Alternatively, other options can be specified:
   'seqfiles':['MicrobeCensus/microbe_census/example/example.fq.gz'],
   'nreads':100000,
   'read_length':100,
-  'file_type':'fastq',
-  'quality_type':'fastq-sanger',
   'threads':1,
   'min_quality':10,
   'mean_quality':10,
@@ -193,22 +188,6 @@ Threads (-t)  | Reads/Second
 2  | 1,300
 4  | 1,800
 8  | 2,000
-
-### Known bugs/issues
-* MicrobeCensus cannot hande FASTQ files with invalid formatting. See: https://en.wikipedia.org/wiki/FASTQ_format#Format. Common mistakes include differences in descriptions between sequence and quality headers:
-```
-@SEQ_ID
-GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT
-+SEQ_ID not ok
-!''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
-```
-```
-@SEQ_ID this is ok
-GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT
-+SEQ_ID this is ok
-!''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
-```
-
 
 ### Training
 We have included scripts and documentation for retraining MicrobeCensus, using user-supplied training genomes and gene families. Documentation and scripts can be found under: MicrobeCensus/training

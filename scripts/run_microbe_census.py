@@ -4,7 +4,7 @@
 # Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
-__version__ = '1.0.7'
+__version__ = '1.1.0'
 
 if __name__ == '__main__':
 
@@ -15,6 +15,9 @@ if __name__ == '__main__':
 						help="print program\'s progress to stdout (default = False)")
 	parser.add_argument('-V', '--version', action='version',
 						version='MicrobeCensus (version %s)' % __version__)
+	parser.add_argument('-r', dest='rapsearch', default=None,
+						help="path to external RAPsearch2 v2.15 binary; useful if precompiled RAPsearch2 v2.15 binary included with MicrobeCensus does not work on your system")
+
 	parser.add_argument('seqfiles', metavar='SEQFILES', type=str,
 						help="""
 							path to input metagenome(s);
@@ -32,20 +35,12 @@ if __name__ == '__main__':
 							""")
 	speed.add_argument('-t', dest='threads', type=int, default=1,
 						help="number of threads to use for database search (default = 1)")
-	speed.add_argument('-e', dest='no_equivs', action='store_false', default=False,
+	speed.add_argument('-e', dest='no_equivs', action='store_true', default=False,
 						help="""
 							quit after average genome size is obtained and do not estimate the number of genome equivalents in SEQFILES.
 							useful in combination with -n for quick tests (default = False)
 							""")
-						
-	type = parser.add_argument_group('File type (optional)')
-	type.add_argument('-f', dest='file_type', type=str,
-						help="file type (default = autodetect)",
-						choices=["fasta", "fastq"])
-	type.add_argument('-c', dest='fastq_format', type=str,
-						help="quality score encoding (default = autodetect)",
-						choices=["fastq-sanger", "fastq-solexa", "fastq-illumina"])
-
+				
 	qc = parser.add_argument_group('Quality control (optional)')
 	qc.add_argument('-l', dest='read_length', type=int,
 						help="all reads trimmed to this length; reads shorter than this discarded (default = median read length)",

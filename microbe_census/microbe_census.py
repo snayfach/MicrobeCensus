@@ -2,7 +2,7 @@
 # Copyright (C) 2013-2015 Stephen Nayfach
 # Freely distributed under the GNU General Public License (GPLv3)
 
-__version__ = '1.0.7'
+__version__ = '1.1.0'
 
 #######################################################################################
 #   IMPORT LIBRARIES
@@ -27,9 +27,6 @@ except: sys.exit("Could not import module 'subprocess'")
 
 try: import bz2
 except: sys.exit("Could not import module 'bz2'")
-
-try: from Bio.SeqIO import parse
-except: sys.exit("Could not import module 'Bio.SeqIO.parse'")
 
 try: from numpy import median, mean, std
 except: sys.exit("Could not import module 'numpy'")
@@ -105,11 +102,15 @@ def check_os():
 	if platform.system() not in ['Linux', 'Darwin']:
 		sys.exit("Operating system '%s' not supported" % platform.system())
 
-def get_relative_paths():
+def get_relative_paths(args):
 	""" Fetch relative paths to data files """
 	paths = {}
 	pkg_dir = os.path.dirname(os.path.abspath(__file__))
-	paths['rapsearch'] = os.path.join(pkg_dir, 'bin/%s' % '_'.join(['rapsearch',platform.system(),'2.15']))
+	if args['rapsearch']:
+		paths['rapsearch'] = args['rapsearch']
+	else:
+		rapsearch = '_'.join(['rapsearch', platform.system(), '2.15'])
+		paths['rapsearch'] = os.path.join(pkg_dir, 'bin/%s' % rapsearch)
 	paths['db'] = os.path.join(pkg_dir, 'data/rapdb_2.15')
 	paths['fams'] = os.path.join(pkg_dir, 'data/gene_fam.map')
 	paths['genelen'] = os.path.join(pkg_dir, 'data/gene_len.map')
@@ -135,10 +136,10 @@ def auto_detect_read_length(seqfile, file_type):
 	valid_lengths = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500]
 	read_lengths = []
 	try:
-		seq_iterator = parse(open_file(seqfile), file_type)
-		for index, record in enumerate(seq_iterator):
+		seq_iterator = parse_seqs(open_file(seqfile))
+		for index, seq in enumerate(seq_iterator):
 			if index == 10000: break
-			read_lengths.append(len(record.seq))
+			read_lengths.append(len(seq.seq))
 	except Exception:
 		sys.exit("Could not detect read length of: %s\nThis may be due to an invalid format\nTry specifying it with -l" % seqfile)
 	median_read_length = int(median(read_lengths))
@@ -156,21 +157,18 @@ def auto_detect_file_type(seqfile):
 		elif line[0] == '@': return 'fastq'
 		else: sys.exit("Filetype [fasta, fastq] of %s could not be recognized" % seqfile)
 
-def auto_detect_fastq_format(seqfile):
-	""" Use first 50,000 reads to detect quality encoding """
-	max_reads = 50000
-	formats = ['fastq-illumina', 'fastq-solexa', 'fastq-sanger']
-	for format in formats:
-		try:
-			index = 0
-			seq_iterator = parse(open_file(seqfile), format)
-			for rec in seq_iterator:
-				if index == max_reads: break
-				index += 1
-			return format
-		except Exception:
-			pass
-	sys.exit("Could not detect quality score encoding of: %s\nThis may be due to an invalid format\nTry specifying it with -c" % seqfile)
+def auto_detect_quality_offset(seqfile):
+	""" Automatically detect quality encoding (32 or 64 bit offset) """
+	offset_32 = set(list("""!"#$%&'()*+,-./0123456789"""))
+	offset_64 = set(list("""KLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""))
+	seq_iterator = parse_seqs(open_file(seqfile))
+	for rec in seq_iterator:
+		for char in rec.quality:
+			if char in offset_32:
+				return 32
+			elif char in offset_64:
+				return 64
+	return 32 # could not detect offset, so just return 32, which is current standard
 
 def impute_missing_args(args):
 	""" Fill in missing arguments with defaults """
@@ -201,20 +199,14 @@ def impute_missing_args(args):
 	if 'max_unknown' not in args:
 		args['max_unknown'] = 100
 
-	if 'file_type' not in args or args['file_type'] is None:
-		args['file_type'] = auto_detect_file_type(args['seqfiles'][0])
+	args['file_type'] = auto_detect_file_type(args['seqfiles'][0])
+
+	if args['file_type'] == 'fastq':
+		args['quality_offset'] = auto_detect_quality_offset(args['seqfiles'][0])
 
 	if 'read_length' not in args or args['read_length'] is None:
 		args['read_length'] = auto_detect_read_length(args['seqfiles'][0], args['file_type'])
 
-	if 'fastq_format' not in args:
-		args['fastq_format'] = None
-
-	if args['file_type'] == 'fastq' and args['fastq_format'] is None:
-		args['fastq_format'] = auto_detect_fastq_format(args['seqfiles'][0])
-		
-	if args['file_type'] == 'fastq':
-		args['quality_type'] = 'solexa_quality' if args['fastq_format'] == 'fastq-solexa' else 'phred_quality'
 
 def check_input(args):
 	# check that input file exists
@@ -224,7 +216,7 @@ def check_input(args):
 
 def check_arguments(args):
 	# QC options are not available for FASTA files
-	if args['file_type'] == 'fasta' and any([args['min_quality'] > -5, args['mean_quality'] > -5, args['fastq_format'] is not None]):
+	if args['file_type'] == 'fasta' and any([args['min_quality'] > -5, args['mean_quality'] > -5]):
 		sys.exit("Quality filtering options are only available for FASTQ files")
 	# check number of threads
 	if args['threads'] < 1:
@@ -248,8 +240,6 @@ def print_parameters(args):
 	print ("Reads trimmed to: %s bp" % args['read_length'])
 	print ("Maximum reads sampled: %s" % args['nreads'])
 	print ("Threads to use for db search: %s" % args['threads'])
-	print ("File format: %s" % args['file_type'])
-	print ("Quality score encoding: %s" % (args['fastq_format'] if args['file_type'] == 'fastq' else 'NA'))
 	print ("Minimum base-level quality score: %s" % (args['min_quality'] if args['file_type'] == 'fastq' else 'NA'))
 	print ("Minimum read-level quality score: %s" % (args['mean_quality'] if args['file_type'] == 'fastq' else 'NA'))
 	print ("Maximum percent unknown bases/read: %s" % args['max_unknown'])
@@ -258,21 +248,66 @@ def print_parameters(args):
 
 def quality_filter(rec, args):
 	""" Return true if read fails QC """
-	# parse record
-	sequence = rec.seq[0:args['read_length']]
-	quality = rec.letter_annotations[args['quality_type']][0:args['read_length']] if args['file_type'] == 'fastq' else None
 	# check percent unknown
+	sequence = rec.seq[0:args['read_length']]
 	if 100 * sum([1 if b == 'N' else 0 for b in sequence]) / float(len(sequence)) > args['max_unknown']:
 		return True
-	# check mean quality
-	elif quality and mean(quality) < args['mean_quality']:
-		return True
-	# check min quality
-	elif quality and min(quality) < args['min_quality']:
-		return True
+	# check quality
+	if args['file_type'] == 'fastq':
+		quality = rec.phred(args['quality_offset'])[0:args['read_length']]
+		if mean(quality) < args['mean_quality']:
+			return True
+		elif min(quality) < args['min_quality']:
+			return True
 	# read passed QC
-	else:
-		return False
+	return False
+
+class Sequence:
+	def __init__(self, name, seq, quality=None):
+		self.id = name
+		self.seq = seq
+		self.quality = quality
+
+	def reverse_complement(self):
+		comp = {'A':'T','T':'A','G':'C','C':'G','N':'N'}
+		return ''.join([comp[_] for _ in self.seq[::-1]])
+
+	def phred(self, offset):
+		return [ord(char)-offset for char in self.quality]
+
+def parse_seqs(fp):
+	""" A generator function for parsing fasta/fastq records 
+		see: https://github.com/lh3/readfq/blob/master/readfq.py """
+	last = None # this is a buffer keeping the last unprocessed line
+	while True: # mimic closure; is it a bad idea?
+		if not last: # the first record or a record following a fastq
+			for l in fp: # search for the start of the next record
+				if l[0] in '>@': # fasta/q header line
+					last = l[:-1] # save this line
+					break
+		if not last: break
+		name, seqs, last = last[1:].partition(" ")[0], [], None
+		for l in fp: # read the sequence
+			if l[0] in '@+>':
+				last = l[:-1]
+				break
+			seqs.append(l[:-1])
+		if not last or last[0] != '+': # this is a fasta record
+			yield Sequence(name, ''.join(seqs)) # yield a fasta record
+			if not last: break
+		else: # this is a fastq record
+			seq, leng, seqs = ''.join(seqs), 0, []
+			for l in fp: # read the quality
+				seqs.append(l[:-1])
+				leng += len(l) - 1
+				if leng >= len(seq): # have read enough quality
+					last = None
+					yield Sequence(name, seq, ''.join(seqs)) # yield a fastq record
+					break
+			if last: # reach EOF before reading enough quality
+				yield Sequence(name, seq) # yield a fasta record instead
+				break
+
 
 def process_seqfile(args, paths):
 	""" Sample high quality reads from seqfile """
@@ -286,14 +321,13 @@ def process_seqfile(args, paths):
 	for seqfile in args['seqfiles']:
 		i = 0
 		try:
-			seq_iterator = parse(open_file(seqfile), args['fastq_format'] if args['file_type'] == 'fastq' else 'fasta')
-			for rec in seq_iterator:
+			for rec in parse_seqs(open_file(seqfile)):
 				i += 1
 				# record sequence if enough high quality bases remain
 				if len(rec.seq) < args['read_length']:
 					too_short += 1; continue
 				# check if sequence is a duplicate
-				elif args['filter_dups'] and (str(rec.seq) in seqs or str(rec.seq.reverse_complement()) in seqs):
+				elif args['filter_dups'] and (str(rec.seq) in seqs or str(rec.reverse_complement()) in seqs):
 					dups += 1; continue
 				# check if sequence is low quality
 				elif quality_filter(rec, args):
@@ -306,9 +340,7 @@ def process_seqfile(args, paths):
 					if read_id == args['nreads']: break
 			if read_id == args['nreads']: break
 		except Exception, e:
-			error = "\nAn error was encountered when parsing sequence #%s in the input file: %s\n" % (i+1, seqfile)
-			error += "Make sure that the sequence and quality headers match for each sequence (- the 1st character)\n"
-			error += "See: https://en.wikipedia.org/wiki/FASTQ_format"
+			error = "\nThe following error was encountered when parsing sequence #%s in the input file:\n%s\n" % (i+1, e)
 			clean_up(paths)
 			sys.exit(error)
 	# report summary
@@ -548,7 +580,7 @@ def run_pipeline(args):
 	check_os()
 
 	# Fetch data paths and make sure files exist
-	paths = get_relative_paths()
+	paths = get_relative_paths(args)
 	check_paths(paths)
 
 	try:

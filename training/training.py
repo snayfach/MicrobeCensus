@@ -82,7 +82,7 @@ def xvalidation(pars, xfolds, genome_names, rates, genome2size, queue):
 		# train model
 		prop_constant = estimate_proportionality_constant(train_genomes, train_rates, genome2size)
 		# test model
-		error += test_error(train_genomes, train_rates, prop_constant, genome2size)
+		error += test_error(test_genomes, test_rates, prop_constant, genome2size)
 	queue.put([pars, numpy.median(error)])
 
 def genome_sizes(genomes_dir):

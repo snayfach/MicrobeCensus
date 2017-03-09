@@ -106,7 +106,7 @@ def get_relative_paths(args):
 	""" Fetch relative paths to data files """
 	paths = {}
 	pkg_dir = os.path.dirname(os.path.abspath(__file__))
-	if args['rapsearch']:
+	if 'rapsearch' in args and args['rapsearch']:
 		paths['rapsearch'] = args['rapsearch']
 	else:
 		rapsearch = '_'.join(['rapsearch', platform.system(), '2.15'])
@@ -130,6 +130,18 @@ def check_paths(paths):
 			continue
 		else:
 			sys.exit("Path to file/dir not found: %s" % my_path)
+
+def check_rapsearch(rapsearch):
+	""" Check that rapsearch2 binary is version 2.15 and is executable """
+	process = subprocess.Popen(rapsearch + ' -h', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	retcode = process.wait()
+	output, error = process.communicate()
+	if os.path.isdir(rapsearch):
+		sys.exit("Problem executing rapsearch2: '%s'" % rapsearch)
+	elif len(error.split('\n')) < 2:
+		sys.exit("Problem executing rapsearch2: '%s'" % rapsearch)
+	elif error.split('\n')[1] != 'rapsearch v2.15: Fast protein similarity search tool for short reads':
+		sys.exit("Incorrect version of rapsearch2 detected:'%s\nMicrobeCensus requires rapsearch v2.15" % rapsearch)
 
 def auto_detect_read_length(seqfile, file_type):
 	""" Find median read length from first 10K reads in seqfile """
@@ -586,8 +598,13 @@ def run_pipeline(args):
 	try:
 		# Check input, impute any missing arguments/options, sanity check, print to stdout
 		check_input(args)
+		
 		impute_missing_args(args)
+		
 		check_arguments(args)
+		
+		check_rapsearch(paths['rapsearch'])
+		
 		if args['verbose']: print_parameters(args)
 
 		# Sample and QC reads from seqfile

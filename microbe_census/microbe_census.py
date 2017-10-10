@@ -351,7 +351,7 @@ def process_seqfile(args, paths):
 					if args['filter_dups']: seqs.add(str(rec.seq))
 					if read_id == args['nreads']: break
 			if read_id == args['nreads']: break
-		except Exception, e:
+		except Exception as e:
 			error = "\nThe following error was encountered when parsing sequence #%s in the input file:\n%s\n" % (i+1, e)
 			clean_up(paths)
 			sys.exit(error)

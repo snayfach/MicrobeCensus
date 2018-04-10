@@ -13,22 +13,25 @@ Once AGS is obtained, it becomes possible to obtain the total coverage of microb
 * Python version 2 or 3
 
 ### Installation
-Download MicrobeCensus from: https://github.com/snayfach/MicrobeCensus/archive/v1.1.0.tar.gz  
+Clone the repo:  
+`git clone https://github.com/snayfach/MicrobeCensus`  
 
-Unpack the project: 
-`tar -zxvf MicrobeCensus-1.1.0.tar.gz`
-
-Navigate to the installation directory:  
+Or, download the latest release from: https://github.com/snayfach/MicrobeCensus/releases  
+ 
+Unpack the project as necessary and navigate to the installation directory:  
 `cd /path/to/MicrobeCensus`  
 
 Run setup.py. This will install any dependencies:  
 `python setup.py install` or  
 `sudo python setup.py install` to install as a superuser
 
-Alternatively, MicrobeCensus can be installed directly from PyPI:  
+Alternatively, MicrobeCensus can be installed using pip (may not be latest version):  
 `pip install MicrobeCensus` or   
 `sudo pip install MicrobeCensus` to install as a superuser, or  
 `pip install --user MicrobeCensus` to install in your home directory  
+
+You can also install using conda (may not be latest version):    
+`conda install -c bioconda microbecensus`  
 
 ### Using MicrobeCensus without installing
 Although this is not recommended, users may wish to run MicrobeCensus without running setup.py.  

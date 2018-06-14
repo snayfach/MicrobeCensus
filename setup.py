@@ -9,7 +9,7 @@ class my_install_lib(install_lib.install_lib):
 		install_lib.install_lib.run(self)
 		for fn in self.get_outputs():
 			if fn.split('/')[-2] == 'bin':
-				mode = ((os.stat(fn).st_mode) | 0555) & 07777
+				mode = ((os.stat(fn).st_mode) | 0o555) & 0o7777
 				log.info("changing mode of %s to %o", fn, mode)
 				os.chmod(fn, mode)
 

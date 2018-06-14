@@ -138,9 +138,9 @@ def check_rapsearch(rapsearch):
 	output, error = process.communicate()
 	if os.path.isdir(rapsearch):
 		sys.exit("Problem executing rapsearch2: '%s'" % rapsearch)
-	elif len(error.split('\n')) < 2:
+	elif len(error.decode().split('\n')) < 2:
 		sys.exit("Problem executing rapsearch2: '%s'" % rapsearch)
-	elif error.split('\n')[1] != 'rapsearch v2.15: Fast protein similarity search tool for short reads':
+	elif error.decode().split('\n')[1] != 'rapsearch v2.15: Fast protein similarity search tool for short reads':
 		sys.exit("Incorrect version of rapsearch2 detected:'%s\nMicrobeCensus requires rapsearch v2.15" % rapsearch)
 
 def auto_detect_read_length(seqfile, file_type):

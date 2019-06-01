@@ -330,40 +330,31 @@ def process_seqfile(args, paths):
     if args['verbose']:
         print ("====Estimating Average Genome Size====")
         print ("Sampling & trimming reads...")
-    outfile = open(paths['tempfile'], 'w')
-    # loop over sequences
-    read_id, dups, too_short, low_qual = 0, 0, 0, 0
-    seqs = set([])
-    for seqfile in args['seqfiles']:
-        i = 0
-        try:
-            for rec in parse_seqs(open_file(seqfile)):
-                i += 1
-                # record sequence if enough high quality bases remain
-                if len(rec.seq) < args['read_length']:
-                    too_short += 1; continue
-                # check if sequence is a duplicate
-                elif args['filter_dups'] and (str(rec.seq) in seqs or str(rec.reverse_complement()) in seqs):
-                    dups += 1; continue
-                # check if sequence is low quality
-                elif quality_filter(rec, args):
-                    low_qual += 1; continue
-                # keep seq
-                else:
-                    outfile.write('>'+str(read_id)+'\n'+str(rec.seq[0:args['read_length']])+'\n')
-                    read_id += 1
-                    if args['filter_dups']: seqs.add(str(rec.seq))
-                    if read_id == args['nreads']: break
-            if read_id == args['nreads']: break
-        except Exception as e:
-            error = (
-                "\nThe following error was encountered when parsing sequence"
-                "#%s in the input file:\n%s\n" % (i+1, e)
-            )
-            clean_up(paths)
-            sys.exit(error)
-        finally:
-            outfile.close()
+    with open(paths['tempfile'], 'w') as outfile:
+		# loop over sequences
+		read_id, dups, too_short, low_qual = 0, 0, 0, 0
+		seqs = set([])
+		for seqfile in args['seqfiles']:
+			i = 0
+			print seqfile
+			for rec in parse_seqs(open_file(seqfile)):
+				i += 1
+				# record sequence if enough high quality bases remain
+				if len(rec.seq) < args['read_length']:
+					too_short += 1; continue
+				# check if sequence is a duplicate
+				elif args['filter_dups'] and (str(rec.seq) in seqs or str(rec.reverse_complement()) in seqs):
+					dups += 1; continue
+				# check if sequence is low quality
+				elif quality_filter(rec, args):
+					low_qual += 1; continue
+				# keep seq
+				else:
+					outfile.write('>'+str(read_id)+'\n'+str(rec.seq[0:args['read_length']])+'\n')
+					read_id += 1
+					if args['filter_dups']: seqs.add(str(rec.seq))
+					if read_id == args['nreads']: break
+			if read_id == args['nreads']: break
     # report summary
     if read_id == 0:
         clean_up(paths)

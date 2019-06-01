@@ -336,7 +336,6 @@ def process_seqfile(args, paths):
         seqs = set([])
         for seqfile in args['seqfiles']:
             i = 0
-            print seqfile
             for rec in parse_seqs(open_file(seqfile)):
                 i += 1
                 # record sequence if enough high quality bases remain
